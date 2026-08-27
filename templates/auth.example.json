@@ -1,0 +1,28 @@
+{
+  "identities": {
+    "_comment": "Ogni identita: o 'headers' statici (token gia pronto), o 'login' (email+password -> token fresco a ogni run).",
+
+    "user_a": { "headers": ["Authorization: Bearer PASTE_JWT_FOR_USER_A"] },
+
+    "supabase_test": {
+      "login": {
+        "type": "supabase",
+        "url": "https://examplesupabaseref00.supabase.co",
+        "anon_key": "PASTE_SUPABASE_ANON_KEY",
+        "email": "test@example.com",
+        "password": "PASSWORD_DEL_TUO_ACCOUNT_DI_TEST"
+      },
+      "extra_headers": ["apikey: PASTE_SUPABASE_ANON_KEY"]
+    },
+
+    "api_test": {
+      "login": {
+        "type": "post",
+        "url": "https://example-api.azurewebsites.net/api/v1/Authorize/GenerateToken",
+        "body": { "email": "test@example.com", "password": "PASSWORD" },
+        "token_path": "data.token"
+      }
+    }
+  },
+  "notes": "Copia in auth.json (gitignorato). Con un solo account di test usi UNA identita: va bene per IDOR orizzontale (enumeri ID altrui col tuo token), missing-auth e injection authed. Verifica il login: node tools/login.js supabase_test  (deve stampare un token)."
+}

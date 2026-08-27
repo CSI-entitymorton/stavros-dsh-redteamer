@@ -1,0 +1,28 @@
+{
+  "listeners": {
+    "lan_https": { "type": "https", "host": "192.168.3.10", "port": 8443, "reachable_from": "lan" },
+    "vps_mtls":  { "type": "mtls",  "host": "CHANGE_ME.example", "port": 443, "reachable_from": "internet" },
+    "havoc_cdn": {
+      "type": "havoc",
+      "host": "CHANGE_ME.clean-domain.example",
+      "port": 443,
+      "reachable_from": "internet",
+      "operator": {
+        "teamserver": "CHANGE_ME.ts-private-ip",
+        "teamserver_port": 40056,
+        "notes": "Havoc teamserver (docker compose per localhavoc reference). The teamserver itself is NEVER internet-exposed."
+      },
+      "redirector": {
+        "kind": "cloudflared-tunnel",
+        "domain_rotation": "per-engagement",
+        "notes": "cloudflared tunnel fronts the teamserver behind a clean domain with managed TLS — callbacks see CDN IPs, not the TS IP (same egress-mask philosophy as egress-proxy --socks5)."
+      },
+      "hardening": [
+        "run the teamserver as a dedicated non-root user/container, no shell history on the box",
+        "host firewall: allow ONLY the cloudflared outbound connection + your SSH source IP",
+        "rotate listener profile/domain at teardown; record artifacts in sessions.js teardown ledger"
+      ]
+    }
+  },
+  "notes": "Copia in c2.json (gitignorato) e compila. Profili di listener per generare implant: host = dove il target richiama. Usa lan_https per engagement interni, vps_mtls (col tuo VPS/redirector) per target su internet, havoc_cdn quando serve C2 dietro CDN con dominio pulito (profilo Havoc, repo-vet churchofmalware QW8)."
+}

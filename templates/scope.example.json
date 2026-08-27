@@ -1,0 +1,7 @@
+{
+  "_comment": "SCOPE = WRITTEN AUTHORIZATION. Compile this file with the hosts you are authorized to test. EMPTY = everything is blocked (fail-closed): every guarded tool refuses. allowed_hosts: host + subdomains. allowed_url_prefixes: exact URL prefixes. allowed_ips: literal IP hosts or CIDR (e.g. 127.0.0.1, 10.0.0.0/8) for authorized internal/SSRF targets. Never test anything not listed here.",
+  "allowed_hosts": [],
+  "allowed_url_prefixes": [],
+  "allowed_ips": [],
+  "max_requests_per_second": 2
+}

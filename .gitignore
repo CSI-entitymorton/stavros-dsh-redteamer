@@ -1,0 +1,24 @@
+# build artifacts
+node_modules/
+lib/
+dist/
+*.tgz
+
+# engagement runtime (hydrated by the plugin into the workspace root)
+scope.json
+auth.json
+c2.json
+wifi-scope.json
+reports/
+artifacts/
+evidence-index.md
+coverage-matrix.md
+gate-log.md
+operation-state.json
+residue.md
+memory/
+noauth_results/
+recon/
+
+# os
+.DS_Store

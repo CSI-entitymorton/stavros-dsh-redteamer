@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "name": "stavros-test-registry",
+    "model": "REDflare-style stable test-ID registry (repo-vet churchofmalware plan QW7)",
+    "standards": {
+      "wstg": "OWASP WSTG v4.2 category/test ids",
+      "asvs": "OWASP ASVS chapters (short name form, pointer-level not claim-level)",
+      "cwe": "MITRE CWE ids",
+      "owasp_api": "OWASP API Security Top 10 (2023) ids"
+    },
+    "note": "Pointers to methodology references per finding/vuln CLASS. They guide the tester and enrich reports; they are NOT evidence that a check was executed."
+  },
+  "classes": {
+    "info": { "wstg": ["WSTG-INFO"], "asvs": [], "cwe": ["CWE-200"], "owasp_api": ["API9"] },
+    "config": { "wstg": ["WSTG-CONF"], "asvs": ["V14 Config"], "cwe": ["CWE-16"], "owasp_api": ["API8"] },
+    "authn": { "wstg": ["WSTG-ATHN", "WSTG-IDNT"], "asvs": ["V6 Auth", "V2 Passwords"], "cwe": ["CWE-287"], "owasp_api": ["API2"] },
+    "session": { "wstg": ["WSTG-SESS"], "asvs": ["V3 Session"], "cwe": ["CWE-384"], "owasp_api": ["API2"] },
+    "authz": { "wstg": ["WSTG-ATHZ"], "asvs": ["V4 Access Control"], "cwe": ["CWE-862", "CWE-863"], "owasp_api": ["API5"] },
+    "idor": { "wstg": ["WSTG-ATHZ-04"], "asvs": ["V4 Access Control"], "cwe": ["CWE-639"], "owasp_api": ["API1"] },
+    "csrf": { "wstg": ["WSTG-SESS-05"], "asvs": ["V3 Session"], "cwe": ["CWE-352"], "owasp_api": [] },
+    "sqli": { "wstg": ["WSTG-INPV-05"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-89"], "owasp_api": [] },
+    "nosqli": { "wstg": ["WSTG-INPV"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-943"], "owasp_api": [] },
+    "xss": { "wstg": ["WSTG-INPV-01", "WSTG-INPV-02"], "asvs": ["V5 Validation & Encoding", "V3 Web Frontend"], "cwe": ["CWE-79"], "owasp_api": [] },
+    "xxe": { "wstg": ["WSTG-XXE-01", "WSTG-INPV-07"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-611"], "owasp_api": [] },
+    "injection": { "wstg": ["WSTG-INPV-11", "WSTG-INPV-12"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-77", "CWE-78", "CWE-94"], "owasp_api": [] },
+    "ssti": { "wstg": ["WSTG-INPV-11"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-1336"], "owasp_api": [] },
+    "deser": { "wstg": ["WSTG-INPV-11"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-502"], "owasp_api": [] },
+    "lfi": { "wstg": ["WSTG-ATHZ-01", "WSTG-INPV"], "asvs": ["V12 Files & Resources"], "cwe": ["CWE-22"], "owasp_api": [] },
+    "proto-pollution": { "wstg": ["WSTG-CLNT"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-1321"], "owasp_api": [] },
+    "redirect": { "wstg": ["WSTG-CLNT-04"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-601"], "owasp_api": [] },
+    "upload": { "wstg": ["WSTG-BUSL-09"], "asvs": ["V12 Files & Resources"], "cwe": ["CWE-434"], "owasp_api": [] },
+    "ssrf": { "wstg": ["WSTG-SSRF-01"], "asvs": ["V5 Validation & Encoding"], "cwe": ["CWE-918"], "owasp_api": ["API7"] },
+    "graphql": { "wstg": ["WSTG-APIT-09"], "asvs": ["V4 Access Control", "V13 API"], "cwe": ["CWE-862"], "owasp_api": ["API1", "API6"] },
+    "cloud": { "wstg": ["WSTG-CONF"], "asvs": ["V14 Config"], "cwe": ["CWE-200"], "owasp_api": ["API8"] },
+    "business-logic": { "wstg": ["WSTG-BUSL"], "asvs": ["V13 Business Logic" ], "cwe": [], "owasp_api": ["API6"] },
+    "other": { "wstg": [], "asvs": [], "cwe": [], "owasp_api": [] }
+  }
+}

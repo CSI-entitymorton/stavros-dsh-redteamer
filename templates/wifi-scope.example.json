@@ -1,0 +1,13 @@
+{
+  "bssids":  ["AA:BB:CC:DD:EE:FF"],
+  "essids":  ["MyLabWiFi"],
+  "stations":["11:22:33:44:55:66"],
+  "channels":[1, 6, 11],
+  "monitor_iface": "wlan0",
+  "max_requests_per_second": 1,
+  "wireless_ops": {
+    "auto":    ["scan", "crack"],
+    "confirm": ["deauth", "capture", "wps", "automated"]
+  },
+  "notes": "Copia in wifi-scope.json (gitignorato) e compila. Modello di scope DIVERSO da scope.json (che e IP/host): qui si autorizzano BSSID (MAC degli AP), ESSID (nomi rete), stations (MAC dei client, per deauth/cattura) e channels. Solo reti/punti per cui hai autorizzazione scritta. Finche bssids+essids+stations sono vuote, il wifi-guard BLOCCA TUTTO. wireless_ops definisce il tier: scan (passivo) e crack (offline) girano; deauth/capture(PMKID)/wps/automated(wifite2) richiedono conferma esplicita in-sessione."
+}
