@@ -120,17 +120,9 @@ specialists from `subagents/*.md`, and drive the guarded tools. The `stavros_*` 
 tools are thin wrappers over the same gated engines — the guards cannot be bypassed from the
 wrapper.
 
-```mermaid
-flowchart LR
-    U[You] -->|Stavros, assess https://target.com| P[Stavros orchestrator]
-    P --> K[Reads knowledge.md + scope.json]
-    P --> S[Spawns specialists · 24 subagents]
-    S --> T[Guarded tools · tools/*.js]
-    T --> G{scope-guard · in scope?}
-    G -->|yes| E[Action executes]
-    G -->|no · empty scope| B[BLOCKED · fail-closed]
-    E --> F[Verified findings<br/>reports/findings.jsonl]
-```
+<p align="center">
+  <img src="assets/how-it-works.svg" alt="How Stavros works: prompt to the orchestrator, which reads methodology and scope, spawns 24 specialists, and invokes guarded tools; every action passes the scope-guard — in scope it executes into verified findings, out of scope or empty scope it is blocked, fail-closed." width="100%"/>
+</p>
 
 ## Security model (read this)
 
