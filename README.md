@@ -1,6 +1,6 @@
 # stavros-dsh-redteamer
 
-<img src="assets/banner.svg" alt="stavros-dsh-redteamer — authorized red-team harness for the DeepSeek Harness (DSH). Runs on your own model (DeepSeek or a local Qwen); the enforcement core is the verifiable, Apache-2.0 scopelock project. 24 specialists, 78 guarded tools, zero runtime dependencies." width="100%"/>
+<img src="assets/hero.svg" alt="stavros-dsh-redteamer — authorized red-team harness for the DeepSeek Harness (DSH). Runs on your own model (DeepSeek or a local Qwen); the enforcement core is the verifiable, Apache-2.0 scopelock project. 24 specialists, 78 guarded tools, zero runtime dependencies." width="100%"/>
 
 [![CI](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml) [![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) [![npm](https://img.shields.io/npm/v/stavros-dsh-redteamer)](https://www.npmjs.com/package/stavros-dsh-redteamer) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](package.json) [![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](package.json)
 

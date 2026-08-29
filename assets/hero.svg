@@ -11,6 +11,7 @@
     <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
       <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#1b2330" stroke-width="1"/>
     </pattern>
+    <clipPath id="termclip"><rect x="44" y="100" width="444" height="192"/></clipPath>
   </defs>
 
   <!-- background -->
@@ -28,12 +29,14 @@
     <circle cx="102" cy="81" r="5.5" fill="#27c93f"/>
     <text x="118" y="86" fill="#5b6577" font-size="13">stavros@harness: ~/engagement</text>
 
-    <text x="58" y="130" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">scope-guard</tspan> check *.target.com</text>
-    <text x="58" y="158" fill="#3fb950" font-size="14">[ OK ] in scope · gate open · engaging</text>
-    <text x="58" y="190" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">swarm</tspan> 24 specialists &#8594; target.com</text>
-    <text x="58" y="218" fill="#f85149" font-size="14">[ HIT ] stavros-sqli &#183; auth bypass on /api</text>
-    <text x="58" y="250" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">record-finding</tspan> --verify --proof</text>
-    <text x="58" y="278" fill="#f85149" font-size="14" font-weight="bold">[ OWNED ] admin session &#183; cvss 9.1 &#183; logged</text>
+    <g clip-path="url(#termclip)" font-size="13">
+      <text x="58" y="132" fill="#8b949e">$ <tspan fill="#f85149">scope-guard</tspan> check *.target.com</text>
+      <text x="58" y="160" fill="#3fb950">[ OK ] in scope · gate open · engaging</text>
+      <text x="58" y="192" fill="#8b949e">$ <tspan fill="#f85149">swarm</tspan> 24 specialists &#8594; target.com</text>
+      <text x="58" y="220" fill="#f85149">[ HIT ] stavros-sqli &#183; auth bypass on /api</text>
+      <text x="58" y="252" fill="#8b949e">$ <tspan fill="#f85149">record-finding</tspan> --verify --proof</text>
+      <text x="58" y="280" fill="#f85149" font-weight="bold">[ OWNED ] admin session &#183; cvss 9.1 &#183; logged</text>
+    </g>
   </g>
 
   <!-- title block (right) -->
