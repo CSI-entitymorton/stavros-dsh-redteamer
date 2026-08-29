@@ -60,6 +60,11 @@ so the harness stays on the rails even when the model doesn't.
 > **Not autonomous.** Stavros is a supervised expert team: it proposes, plans, and drafts —
 > you review and approve every confirm-tier action (escalations, persistence, lateral
 > movement, anything irreversible). The harness runs *with* you in the loop, not instead of you.
+>
+> **On the roadmap.** We are actively working on experimental solutions to make the harness
+> safer and more efficient, with **fully autonomous operation as the eventual goal**. That
+> still requires real work — autonomy without weakening the containment guarantees is the
+> hard part — and it will ship only when the guards hold.
 
 ## The crew: 24 specialists
 
