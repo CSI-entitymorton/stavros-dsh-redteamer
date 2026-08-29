@@ -1,0 +1,12 @@
+dsh-stavros
+===========
+
+Portions of the methodology knowledge base (refs/) and the DSH tooling/persona
+derive from the MIT-licensed project:
+
+  SeaOf0/dsh-redteam-model  —  https://github.com/SeaOf0/dsh-redteam-model  (MIT)
+
+Those portions remain under the MIT License. See LICENSE.
+
+This project is an independent, unofficial plugin for the DeepSeek Harness (DSH).
+It is not affiliated with, endorsed by, or published by DeepSeek.

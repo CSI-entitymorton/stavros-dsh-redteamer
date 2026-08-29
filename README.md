@@ -7,11 +7,11 @@
 > in scope.
 
 Stavros RedTeam as a native DSH (DeepSeek Harness) plugin: the full authorized red-team persona
-(24 specialist subagents), the pentest methodology, and the 90+ zero-dependency scope-guarded
+(24 specialist subagents), the pentest methodology, and the 78 zero-dependency scope-guarded
 tools — installable with `dsh plugin add`, no manual preset wiring.
 
 - **Cervello**: orchestrator persona + 24 specialists (`stavros-ad`, `stavros-sqli`,
-  `stavros-authn`, `stavros-authz`, `stavros-recon`, …), `knowledge.md` methodology, 105-class
+  `stavros-authn`, `stavros-authz`, `stavros-recon`, …), `knowledge.md` methodology, 106-file
   `refs/` knowledge base, `pentest-playbook` skill.
 - **Muscoli**: the `tools/` suite — `scope-guard.js`, `repeater.js`, `run.js`,
   `analyze-bundle.js`, `record-finding.js`, `oob.js`, `jwt.js`, `cors.js`, `csp.js`, `map.js`,

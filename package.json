@@ -1,7 +1,7 @@
 {
   "name": "dsh-stavros",
   "version": "0.2.0",
-  "description": "Stavros RedTeam for DeepSeek Harness (DSH) — authorized red-team persona + scope-guarded pentest tooling (persona, subagents, methodology and the 90+ guard tools).",
+  "description": "Stavros RedTeam for DeepSeek Harness (DSH) — authorized red-team persona + scope-guarded pentest tooling (persona, 24 subagents, methodology and 78 zero-dependency guard tools).",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -25,7 +25,9 @@
     "scripts",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE",
+    "SECURITY.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
