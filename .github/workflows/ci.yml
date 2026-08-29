@@ -40,7 +40,7 @@ jobs:
                 ;;
             esac
             echo "== $t"
-            if ! node "$t" >/dev/null 2>&1; then
+            if ! node "$t"; then
               echo "FAIL: $t"
               fails=$((fails+1))
             fi
