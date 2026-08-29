@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Build (tsc → lib/)
+        run: npm run build
+      - name: Fail-closed smoke — no scope.json must block
+        run: |
+          if node tools/scope-guard.js check https://example.com; then
+            echo "FAIL: scope-guard did NOT fail closed without scope.json" >&2
+            exit 1
+          fi
+          echo "OK: empty scope blocks (fail-closed confirmed)"
+      - name: Hermetic tool suite (excludes network-bound E2E)
+        run: |
+          fails=0
+          for t in tools/test-*.js; do
+            case "$t" in
+              tools/test-authn-depth.js|tools/test-mcp.js)
+                echo "skip (network-bound E2E): $t"
+                continue
+                ;;
+            esac
+            echo "== $t"
+            if ! node "$t" >/dev/null 2>&1; then
+              echo "FAIL: $t"
+              fails=$((fails+1))
+            fi
+          done
+          if [ "$fails" -gt 0 ]; then
+            echo "$fails test file(s) failed" >&2
+            exit 1
+          fi
+          echo "all hermetic tests passed"

@@ -1,6 +1,6 @@
 # stavros-dsh-redteamer
 
-[![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg) ![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg) ![version](https://img.shields.io/badge/version-0.2.0-6a9fb5.svg)
+[![CI](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml) [![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg) ![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg) ![version](https://img.shields.io/badge/version-0.2.0-6a9fb5.svg)
 
 **Stavros RedTeam for the DeepSeek Harness (DSH).** An authorized-only red-team harness
 that ships as a plugin: one persona, 24 specialist subagents, 78 zero-dependency
@@ -92,6 +92,18 @@ specialists from `subagents/*.md`, and drive the guarded tools. The `stavros_*` 
 tools are thin wrappers over the same gated engines — the guards cannot be bypassed from the
 wrapper.
 
+```mermaid
+flowchart LR
+    U[You] -->|Stavros, assess https://target.com| P[Stavros orchestrator]
+    P --> K[Reads knowledge.md + scope.json]
+    P --> S[Spawns specialists · 24 subagents]
+    S --> T[Guarded tools · tools/*.js]
+    T --> G{scope-guard · in scope?}
+    G -->|yes| E[Action executes]
+    G -->|no · empty scope| B[BLOCKED · fail-closed]
+    E --> F[Verified findings<br/>reports/findings.jsonl]
+```
+
 ## Security model (read this)
 
 - **`scope.json` is the written authorization.** Guarded tools refuse anything not listed
@@ -173,9 +185,14 @@ git push --tags
 Requires the `NPM_TOKEN` secret (npm **Automation** token) in repository secrets and the
 `npm-publish` environment (optional: required reviewers).
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) — what's welcome, how to run the suite, and the
+project's boundaries. Bug reports and feature requests: use the issue templates.
+
 ## Attribution & license
 
 MIT. `refs/`, `skills/pentest-playbook` and parts of the persona are adapted from
 [SeaOf0/dsh-redteam-model](https://github.com/SeaOf0/dsh-redteam-model) (MIT) and from the
 StavrosRedTeamer project. The `tools/` suite is the runtime-agnostic engine shared with
-StavrosRedTeamer (MIT). See `LICENSE` and `NOTICE`.
+StavrosRedTeamer (MIT). See `LICENSE`, `NOTICE` and `CHANGELOG.md`.
