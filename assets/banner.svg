@@ -41,7 +41,7 @@
     <rect x="520" y="78" width="6" height="126" fill="#f85149"/>
     <text x="548" y="152" fill="#e6edf3" font-size="66" font-weight="bold" letter-spacing="2">STAVROS</text>
     <text x="552" y="184" fill="#f85149" font-size="20" letter-spacing="6">DSH · REDTEAMER</text>
-    <text x="548" y="220" fill="#9da7b3" font-size="17">Authorized-only red-team harness · fail-closed by code</text>
+    <text x="548" y="220" fill="#9da7b3" font-size="17">Expert team · human-supervised · fail-closed by code</text>
     <text x="548" y="252" fill="#6e7681" font-size="15" font-style="italic">"No authorization decision left for you to make — let the gate decide."</text>
 
     <text x="548" y="300" fill="#e6edf3" font-size="17"><tspan fill="#f85149" font-weight="bold">24</tspan> specialists  ·  <tspan fill="#f85149" font-weight="bold">78</tspan> guarded tools  ·  <tspan fill="#f85149" font-weight="bold">0</tspan> runtime deps</text>

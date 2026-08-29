@@ -4,9 +4,10 @@
 
 [![CI](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml) [![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) [![npm](https://img.shields.io/npm/v/stavros-dsh-redteamer)](https://www.npmjs.com/package/stavros-dsh-redteamer) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](package.json) [![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](package.json)
 
-**Stavros RedTeam for the DeepSeek Harness (DSH).** An authorized-only red-team harness
-that ships as a plugin: one persona, 24 specialist subagents, 78 zero-dependency
-scope-guarded tools — install it, compile your `scope.json`, and go.
+**Stavros RedTeam for the DeepSeek Harness (DSH).** An authorized-only red-team **expert
+team** — not an autonomous agent: one orchestrator persona, 24 specialist subagents, and
+78 zero-dependency scope-guarded tools, all designed to be **driven under human
+supervision**. Install it, compile your `scope.json`, and go.
 
 > ⚠️ **AUTHORIZED USE ONLY.** This is an offensive-security harness. Use it only against
 > systems you own or have **written authorization** to test. The scope guard is **enforced by
@@ -25,6 +26,7 @@ scope-guarded tools — install it, compile your `scope.json`, and go.
 - [Quickstart: first run in 5 minutes](#quickstart-first-run-in-5-minutes)
 - [How it works](#how-it-works)
 - [Security model](#security-model-read-this)
+- [Benchmarks and real-world results](#benchmarks-and-real-world-results)
 - [Requirements and install](#requirements-and-install)
 - [Development](#development)
 - [Release](#release)
@@ -54,6 +56,10 @@ so the harness stays on the rails even when the model doesn't.
 > keeps every action inside that line. The offensive capability comes from the operator's own
 > tooling, invoked only through the gated runner. This is the "authorized red team" posture —
 > not a "make the model hack things" shortcut.
+>
+> **Not autonomous.** Stavros is a supervised expert team: it proposes, plans, and drafts —
+> you review and approve every confirm-tier action (escalations, persistence, lateral
+> movement, anything irreversible). The harness runs *with* you in the loop, not instead of you.
 
 ## The crew: 24 specialists
 
@@ -133,6 +139,26 @@ flowchart LR
   (working PoC, complete request packet, or equivalent reproduction artifact) — anything
   unverified is labeled *suspected* and reported as such.
 - The fail-closed property is tested in CI (`verify` job): an empty `scope.json` must block.
+
+## Benchmarks and real-world results
+
+**Honest scope of validation.** This project ships without the formal benchmark suite a
+production-grade harness deserves — running comparative benchmarks across models, targets,
+and environments takes resources this project doesn't have yet. Treat what follows as field
+reports, not laboratory results, and always re-verify findings yourself before acting on them.
+
+**What the field has shown so far.** Built on **DeepSeek V4 Flash** — the model the Stavros
+persona and its specialists run on — the harness has already surfaced **numerous critical
+vulnerabilities in active, commercial websites** during authorized engagements: broken
+access-control chains, SQL injection, auth bypasses, and similar findings, each reproduced
+and recorded through the guard tools before being reported.
+
+**Help us benchmark it properly.** If you run stavros-dsh-redteamer — on any model, against
+any target you are authorized to test — share the numbers: vulnerabilities found per
+engagement, false-positive rate, time to first finding, and how the team behaved under
+supervision. Open an issue titled `Benchmark: ...` (or send a pull request) with your setup
+and results; we collect community benchmarks, publish the aggregate, and credit + link
+reproducible submissions.
 
 ## Requirements and install
 
