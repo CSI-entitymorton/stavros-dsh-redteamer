@@ -1,9 +1,10 @@
 // runner.ts — hydration degli asset nel workspace + esecuzione dei tool scope-gated.
 //
 // Design: il plugin "idrata" il workspace di sessione rendendolo una root di engagement
-// Stavros (tools/, knowledge.md, refs/, skills/, subagents/ + scope.example.json se manca
-// scope.json). L'agente e i wrapper usano QUEL workspace: zero path assoluti, tutto ciò che
-// esiste già in StavrosRedTeamer (persona, subagent, metodologia, tool) funziona invariato.
+// Stavros (tools/, knowledge.md, refs/, skills/, subagents/, workflows/ + scope.example.json
+// se manca scope.json). L'agente e i wrapper usano QUEL workspace: zero path assoluti, tutto
+// ciò che esiste già in StavrosRedTeamer (persona, subagent, metodologia, tool) funziona
+// invariato.
 //
 // Ogni tool viene eseguito come `node <workspace>/tools/<x>.js ...` con cwd = workspace:
 // i guard (scope-guard.js, run.js, repeater.js, ...) trovano scope.json al posto giusto
@@ -34,7 +35,7 @@ export function workspaceDir(): string {
 }
 
 /** Asset che il plugin idrata nel workspace (merging, mai sovrascrive dati esistenti). */
-const HYDRATE_ITEMS = ['tools', 'knowledge.md', 'refs', 'skills', 'subagents'] as const
+const HYDRATE_ITEMS = ['tools', 'knowledge.md', 'refs', 'skills', 'subagents', 'workflows', 'docs'] as const
 
 function copyMissing(src: string, dst: string): void {
   const st = fs.statSync(src)

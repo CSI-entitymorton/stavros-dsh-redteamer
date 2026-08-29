@@ -36,6 +36,7 @@ const { URL } = require('url');
 const { loadScope, inScope } = require('./scope-guard');
 const { wait } = require('./pace');
 const { resolveAndGuard } = require('./net');
+const ssrfGuard = require('./ssrf-guard'); // B9 second layer (ondata 3)
 const privacy = require('./privacy');
 const { loadEgressProxy, tlsTunnel } = require('./proxy-route');
 
@@ -217,6 +218,7 @@ function parseArgs(argv) {
     headers: [], vary: null, method: 'GET', data: null, url: null, as: null, showBody: false,
     timeout: DEFAULT_TIMEOUT, follow: false, session: null, extracts: [], vars: {}, diff: false,
     race: 0, forms: {}, uploads: [], noPace: false, raceWatch: null, watchFields: null,
+    allowMetadata: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
@@ -239,16 +241,36 @@ function parseArgs(argv) {
     else if (k === '--upload') { const kv = argv[++i]; const eq = kv.indexOf('='); a.uploads.push([kv.slice(0, eq), kv.slice(eq + 1)]); }
     else if (k === '--form') { const kv = argv[++i]; const eq = kv.indexOf('='); a.forms[kv.slice(0, eq)] = kv.slice(eq + 1); }
     else if (k === '--no-pace') a.noPace = true;
+    else if (k === '--allow-metadata-target') a.allowMetadata = true; // B9 explicit opt-in
   }
   return a;
 }
 
-function guard(target, scope) {
+// B9 second-layer verdict helper. `scopeAuthorized` = the scope-guard layer already
+// passed for THIS target (inScope and/or DNS pin) — it unlocks only the PRIVATE tier
+// (RFC1918/ULA, internal-lab targets); the HARD tier (loopback/link-local/metadata)
+// stays denied without the explicit opt-in. Denials are fatal; passes are logged once
+// per target into the existing stderr flow.
+function ssrfVerdictOrExit(target, opts, label) {
+  const v = ssrfGuard.checkTarget(target, opts);
+  if (!v.ok) {
+    console.error(JSON.stringify({ blocked: String(target), gate: 'ssrf-guard', tier: v.tier, range: v.range, reason: 'B9 ' + v.why }));
+    process.exit(1);
+  }
+  console.error(`[ssrf] ${label}: pass (${v.tier}${v.range ? ' · ' + v.range : ''})`);
+  return v;
+}
+
+function guard(target, scope, opts) {
   const r = inScope(target, scope);
   if (!r.ok) {
     console.error(JSON.stringify({ blocked: target, reason: r.reason }));
     process.exit(1);
   }
+  // B9 second layer (hostname level: literal-IP hosts + metadata hostnames). The first
+  // layer JUST passed for this exact target -> private tier unlocked; hard tier still
+  // requires --allow-metadata-target. The pinned ADDRESS is re-judged per hop in sendChain.
+  ssrfVerdictOrExit(target, { allowMetadata: !!(opts && opts.allowMetadata), scopeAuthorized: true }, 'guard ' + target);
 }
 
 // One HTTP request. With `proxy` (the local egress proxy in chained mode) the request rides the
@@ -348,9 +370,17 @@ async function sendChain(target, method, headersFn, body, opts, scope, proxy) {
       // Chained: scope-check the hostname but resolve DNS remotely (at the SOCKS upstream).
       const g = inScope(u.toString(), scope);
       if (!g.ok) return { blocked: true, reason: g.reason, target: u.toString() };
+      // B9: no local pin exists in chained mode — judge the hostname itself.
+      const v = ssrfGuard.checkTarget(u.toString(), { allowMetadata: !!opts.allowMetadata, scopeAuthorized: true });
+      if (!v.ok) return { blocked: true, reason: 'B9 ' + v.why, ssrf: { tier: v.tier, range: v.range }, target: u.toString() };
+      if (i === 0) console.error(`[ssrf] hop0 ${u.hostname}: pass (${v.tier}${v.range ? ' · ' + v.range : ''})`);
     } else {
       pin = await resolveAndGuard(u.toString(), scope);
       if (pin.blocked) return { blocked: true, reason: pin.reason, target: u.toString() };
+      // B9: re-judge the PINNED ADDRESS on EVERY hop (redirects are re-pinned here).
+      const v = ssrfGuard.checkAddress(pin.address, { allowMetadata: !!opts.allowMetadata, scopeAuthorized: true });
+      if (!v.ok) return { blocked: true, reason: 'B9 ' + v.why, ssrf: { tier: v.tier, range: v.range }, target: u.toString() };
+      if (i === 0) console.error(`[ssrf] hop0 pinned ${pin.address}: pass (${v.tier}${v.range ? ' · ' + v.range : ''})`);
     }
     const r = await oneRequest(u, curMethod, headersFn(u.hostname), curBody, opts.timeout, pin, proxy);
     const res = finishResult(r, opts);
@@ -384,6 +414,11 @@ async function sendChain(target, method, headersFn, body, opts, scope, proxy) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  // B9: env opt-in equivalent to --allow-metadata-target (loud, never silent).
+  if (!args.allowMetadata && ssrfGuard.envOptIn()) {
+    args.allowMetadata = true;
+    console.error('[ssrf] ALLOW_METADATA_TARGET attivo: metadata/loopback esplicitamente consentiti (opt-in operatore)');
+  }
   if (!args.url) {
     console.error(
       'usage: node repeater.js --url <u> [--method M] [--header "K: V"]... [--data D] [--vary "param=v1,v2"] [--show-body]\n' +
@@ -392,7 +427,8 @@ async function main() {
         '  --show-body includes the first 2KB of each response as PoC evidence\n' +
         '  --follow --timeout <ms> --session <file> --cookies <file> --extract "name=regex" --var k=v\n' +
         '  --diff (body similarity vs baseline) --race <n> [--race-watch <url>] [--watch-field f1,f2]\n' +
-        '  --upload field=path --form k=v --no-pace'
+        '  --upload field=path --form k=v --no-pace\n' +
+        '  --allow-metadata-target lift the B9 metadata/loopback default-deny (explicit opt-in)'
     );
     process.exit(2);
   }
@@ -467,7 +503,7 @@ async function main() {
   // ---- --race N: concurrent identical volley (TOCTOU / double-redemption) ----
   if (args.race) {
     const urlStr = applyVars(args.url, allVars);
-    guard(urlStr, scope);
+    guard(urlStr, scope, args);
     let pin = null;
     if (!proxy) {
       pin = await resolveAndGuard(urlStr, scope);
@@ -475,6 +511,13 @@ async function main() {
         console.error(JSON.stringify({ blocked: urlStr, reason: pin.reason }));
         process.exit(1);
       }
+      // B9: judge the pinned address before the volley (same second layer as sendChain).
+      const v = ssrfGuard.checkAddress(pin.address, { allowMetadata: !!args.allowMetadata, scopeAuthorized: true });
+      if (!v.ok) {
+        console.error(JSON.stringify({ blocked: urlStr, gate: 'ssrf-guard', tier: v.tier, range: v.range, reason: 'B9 ' + v.why }));
+        process.exit(1);
+      }
+      console.error(`[ssrf] race pinned ${pin.address}: pass (${v.tier}${v.range ? ' · ' + v.range : ''})`);
     }
     // --race-watch <url>: snapshot a state endpoint before/after the volley and diff its JSON
     // numbers. A race is only provable through OBSERVED MUTATION (balance drops twice, count
@@ -482,7 +525,7 @@ async function main() {
     let snap = null;
     if (args.raceWatch) {
       const watchUrl = applyVars(args.raceWatch, allVars);
-      guard(watchUrl, scope);
+      guard(watchUrl, scope, args);
       const readState = async () => {
         pace();
         const r = await oneRequest(new URL(watchUrl), 'GET', headersFor(new URL(watchUrl).hostname), null, args.timeout, pin, proxy);
@@ -523,7 +566,7 @@ async function main() {
   // ---- single request ----
   if (!args.vary) {
     const urlStr = applyVars(args.url, allVars);
-    guard(urlStr, scope);
+    guard(urlStr, scope, args);
     const body = bodyIsBuffer ? data : applyVars(data, allVars);
     pace();
     const res = await sendChain(urlStr, args.method, headersFor, body, args, scope, proxy);
@@ -554,7 +597,7 @@ async function main() {
   for (const v of values) {
     const { url: target, data: d } = varyRequest(args.url, args.data, param, v);
     const urlStr = applyVars(target, allVars);
-    guard(urlStr, scope);
+    guard(urlStr, scope, args);
     const body = bodyIsBuffer ? d : applyVars(d, allVars);
     pace();
     const r = await sendChain(urlStr, args.method, headersFor, body, args, scope, proxy);

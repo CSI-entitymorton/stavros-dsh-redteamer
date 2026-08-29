@@ -238,6 +238,138 @@ function parseH8mailJson(text) {
   return out;
 }
 
+// ---- breadth parsers (Ondata 6): TLS, tech/WAF, crawl, dir-bust, SMB enum ----
+// Same contract as above: malformed/empty input never throws; list parsers return [].
+
+// Shared helper: several tools ship a whole JSON array, a whole object, or NDJSON depending
+// on version/flags — accept all three shapes deterministically.
+function jsonListOrNdjson(text) {
+  const t = String(text == null ? '' : text).trim();
+  if (!t) return [];
+  try {
+    const o = JSON.parse(t);
+    if (Array.isArray(o)) return o.filter((x) => x && typeof x === 'object' && !Array.isArray(x));
+    if (o && typeof o === 'object') return [o];
+    return [];
+  } catch { /* fall through to NDJSON */ }
+  const out = [];
+  for (const line of t.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const o = JSON.parse(line);
+      if (o && typeof o === 'object' && !Array.isArray(o)) out.push(o);
+    } catch { /* skip bad line */ }
+  }
+  return out;
+}
+
+// `testssl.sh --jsonfile out.json` (or --json stdout) → records[] =
+//   { host, port, id, severity, finding, cve }. Severity map: CRITICAL/HIGH/MEDIUM/LOW kept,
+//   everything else (OK/INFO/DEBUG/warn) → 'info' (upstream decides what is finding-worthy).
+function parseTestsslJson(text) {
+  const out = [];
+  for (const o of jsonListOrNdjson(text)) {
+    if (o.id == null) continue;
+    const sev = String(o.severity || 'info').toUpperCase();
+    const severity = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(sev) ? sev.toLowerCase() : 'info';
+    const target = typeof o.target === 'string' && o.target.trim() ? o.target.trim() : null;
+    out.push({
+      host: hostnameOf(target) || (target ? String(target).split(':')[0] : null),
+      port: o.port != null && /^\d+$/.test(String(o.port)) ? Number(o.port) : null,
+      id: String(o.id),
+      severity,
+      finding: o.finding != null ? String(o.finding).slice(0, 300) : null,
+      cve: o.cve != null && String(o.cve).trim() ? String(o.cve).trim() : null,
+    });
+  }
+  return out;
+}
+
+// `whatweb --log-json=-` → records[] = { target, status, tech: [{ name, version }] }.
+// plugins is a map name → { version: [...], string: [...], certainty: N }; WAF/tech vendors
+// (CloudFlare, ModSecurity, …) land here and feed the planner's rate-reduction rule.
+function parseWhatwebJson(text) {
+  const out = [];
+  for (const o of jsonListOrNdjson(text)) {
+    if (typeof o.target !== 'string' || !o.target.trim()) continue;
+    const plugins = o.plugins && typeof o.plugins === 'object' && !Array.isArray(o.plugins) ? o.plugins : {};
+    const tech = [];
+    for (const [name, p] of Object.entries(plugins)) {
+      let version = null;
+      if (p && typeof p === 'object') {
+        const v = Array.isArray(p.version) ? p.version[0] : p.version;
+        version = v != null && String(v).trim() !== '' ? String(v) : null;
+      }
+      tech.push({ name: String(name), version });
+    }
+    out.push({ target: o.target, status: o.http_status != null ? Number(o.http_status) : null, tech });
+  }
+  return out;
+}
+
+// `katana -jsonl` (projectdiscovery crawler) → records[] = { method, url, status }.
+function parseKatanaJsonl(text) {
+  const out = [];
+  for (const o of jsonListOrNdjson(text)) {
+    const req = o.request && typeof o.request === 'object' ? o.request : {};
+    const resp = o.response && typeof o.response === 'object' ? o.response : {};
+    const url = typeof req.endpoint === 'string' && req.endpoint.trim() ? req.endpoint.trim() : null;
+    if (!url) continue;
+    out.push({
+      method: typeof req.method === 'string' && req.method ? req.method.toUpperCase() : 'GET',
+      url,
+      status: resp.status_code != null ? Number(resp.status_code) : null,
+    });
+  }
+  return out;
+}
+
+// `dirsearch -o report.json --format json` → records[] = { url, status, length }.
+function parseDirsearchJson(text) {
+  const out = [];
+  for (const o of jsonListOrNdjson(text)) {
+    const results = Array.isArray(o.results) ? o.results : [o];
+    for (const r of results) {
+      if (!r || typeof r !== 'object') continue;
+      const url = typeof r.url === 'string' && r.url.trim()
+        ? r.url.trim()
+        : (typeof r.target === 'string' && typeof r.path === 'string'
+          ? r.target.replace(/\/+$/, '') + (r.path.startsWith('/') ? r.path : '/' + r.path)
+          : null);
+      if (!url) continue;
+      out.push({
+        url,
+        status: r.status != null ? Number(r.status) : null,
+        length: r['content-length'] != null ? Number(r['content-length']) : null,
+      });
+    }
+  }
+  return out;
+}
+
+// `enum4linux-ng -oJ out.json` → [ { host, os, workgroup, users[], shares[] } ] (single record
+// or []). users → {username}; shares → {name, type, comment, access}. Feeds the asset graph's
+// accounts/shares tables so the authenticated pass starts from what is actually enumerated.
+function parseEnum4linuxNgJson(text) {
+  const objs = jsonListOrNdjson(text);
+  const o = objs.length === 1 ? objs[0] : null;
+  if (!o || typeof o.target !== 'string' || !o.target.trim()) return [];
+  const users = (Array.isArray(o.users) ? o.users : [])
+    .map((u) => (u && typeof u.username === 'string' && u.username.trim() ? { username: u.username.trim() } : null))
+    .filter(Boolean);
+  const shares = (Array.isArray(o.shares) ? o.shares : [])
+    .map((s) => (s && typeof s.name === 'string' && s.name.trim() ? {
+      name: s.name.trim(),
+      type: s.type != null ? String(s.type) : null,
+      comment: s.comment != null ? String(s.comment).slice(0, 200) : null,
+      access: s.ops4_status != null ? String(s.ops4_status) : null,
+    } : null))
+    .filter(Boolean);
+  const os = o.smb && typeof o.smb === 'object' && o.smb.native_os ? String(o.smb.native_os) : null;
+  const workgroup = typeof o.workgroup === 'string' && o.workgroup.trim() ? o.workgroup.trim() : null;
+  return [{ host: o.target.trim(), os, workgroup, users, shares }];
+}
+
 module.exports = {
   parseNucleiJsonl,
   parseHttpxJson,
@@ -245,4 +377,9 @@ module.exports = {
   parseFfufJson,
   parseNetexec,
   parseH8mailJson,
+  parseTestsslJson,
+  parseWhatwebJson,
+  parseKatanaJsonl,
+  parseDirsearchJson,
+  parseEnum4linuxNgJson,
 };

@@ -75,7 +75,8 @@ function nextId(records, prefix) {
 // ---------- sanitizer ----------
 function scopeFingerprints() {
   const fps = new Set();
-  const p = path.join(ROOT, 'scope.json');
+  // SCOPE_JSON: override per i test (fixture in mkdtemp); default = <workspace>/scope.json
+  const p = process.env.SCOPE_JSON || path.join(ROOT, 'scope.json');
   if (fs.existsSync(p)) {
     try {
       const sc = JSON.parse(fs.readFileSync(p, 'utf8'));

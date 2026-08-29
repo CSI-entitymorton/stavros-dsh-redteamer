@@ -1,4 +1,4 @@
-# cordis.patch.yml — dsh-stavros bundle patch.
+# cordis.patch.yml — stavros-dsh-redteamer bundle patch.
 #
 # Portato da dsh/modes/stavros/agent.cordis.yml (StavrosRedTeamer, MIT lineage via
 # dsh-redteam-model) con tre differenze deliberate:
@@ -23,8 +23,8 @@
 # Senza questa riga il loader non carica mai l'apply() del pacchetto (pattern bundle:
 # una riga nel patch referenzia il pacchetto per nome).
 - insert:
-    - id: dsh-stavros
-      name: dsh-stavros
+    - id: stavros-dsh-redteamer
+      name: stavros-dsh-redteamer
 
 # ─── override: persona Stavros (config persona della riga system-prompt) ───
 - id: system-prompt
@@ -58,6 +58,7 @@
       - stavros-cleanup — Remove every tracked artifact/session; verify the teardown ledger is empty.
       - stavros-cloud — Cloud surface: metadata via SSRF, exposed S3/GCS/Azure buckets, provider fingerprint.
       - stavros-csrf — Find CSRF on state-changing endpoints: missing/stale tokens + SameSite=None/absent cookies.
+      - stavros-hardware — Authorized physical-access ops (rogue-device audit, drop-box deploy/retrieve). Confirm-tier; teardown-ledger tracked.
       - stavros-injection — Test command/template/header injection, open redirect, SSTI/deser/NoSQLi/LFI/proto-pollution.
       - stavros-lateral — Move laterally between in-scope hosts. Confirm-tier: every move needs explicit user sign-off.
       - stavros-mapper — Map endpoints, parameters, forms, auth flows and roles; record per-class candidates via map.js.
@@ -65,6 +66,7 @@
       - stavros-osint — Passive OSINT on a domain/organization: emails, hosts, ASNs, exposed services, metadata.
       - stavros-persist — Install minimal persistence / exfiltrate, only on explicit per-action confirmation.
       - stavros-postex — On a controlled session, run local enumeration, privesc recon, and read-only looting. Auto-tier only.
+      - stavros-privesc — Turn a low-priv session into root/SYSTEM: catalog checks (auto), then ONE operator-approved escalation (confirm).
       - stavros-recon — Map the attack surface of a host: subdomains, live hosts, tech stack, historical URLs.
       - stavros-reporter — Consolidate findings, state, and chains into a single severity-ordered report.
       - stavros-sqli — Test candidate parameters for SQL injection (error/boolean/time-blind) and prove it safely.

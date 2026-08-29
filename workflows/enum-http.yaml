@@ -1,0 +1,21 @@
+# Workflow seed — enum-http (dialetto workflow, Ondata 2 C1w)
+# Preflight richiede httpx+whatweb presenti (aggancio E5: tool-plane --require web).
+name: enum-http
+description: Enumerazione HTTP autorizzata (probe httpx + fingerprint whatweb)
+vars:
+  outdir: reports
+requires:
+  - httpx
+  - whatweb
+steps:
+  - id: probe-httpx
+    cmd: node tools/run.js httpx -title -tech-detect -status-code -no-color {target}
+    on_error: continue
+    artifacts:
+      - path: "{outdir}/enum-{target}-httpx.txt"
+        surface: scan
+  - id: whatweb-fingerprint
+    cmd: node tools/run.js whatweb --no-errors -a 1 {target}
+    artifacts:
+      - path: "{outdir}/enum-{target}-whatweb.txt"
+        surface: scan

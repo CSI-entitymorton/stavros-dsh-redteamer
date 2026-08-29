@@ -1,0 +1,23 @@
+# Workflow seed — enum-smb (dialetto workflow, Ondata 2 C1w)
+# Solo per host Windows/SMB autorizzati. on_error continue sul primo step:
+# un guest-session rifiutata non deve fermare la session enumeration.
+name: enum-smb
+description: Enumerazione SMB autorizzata (share + sessioni, credenziali nulle)
+vars:
+  share_out: reports
+requires:
+  - enum4linux_ng
+steps:
+  - id: smb-enum-shares
+    cmd: node tools/run.js enum4linux_ng -A -C {target}
+    on_error: continue
+    artifacts:
+      - path: "{share_out}/enum-{target}-smb.txt"
+        surface: scan
+  - id: smb-nullsession-check
+    cmd: node tools/run.js enum4linux_ng -S {target}
+    when:
+      exit_code: [0, 1, 2]
+    artifacts:
+      - path: "{share_out}/enum-{target}-smb-shares.txt"
+        surface: scan

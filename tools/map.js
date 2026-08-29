@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CLASSES = ['sqli', 'xss', 'idor', 'ssrf', 'other'];
+const CLASSES = ['sqli', 'xss', 'idor', 'bola', 'bfla', 'authn', 'authz', 'ssrf', 'smuggling', 'llm', 'mcp', 'other'];
 const REQUIRED = ['host', 'path'];
 
 // Standards registry (REDflare-pattern, repo-vet plan QW7): stable per-class pointers to
@@ -33,7 +33,7 @@ function loadRegistry() {
 function refsFor(cls) {
   const r = loadRegistry()[cls];
   if (!r) return null;
-  return { class: cls, wstg: r.wstg || [], asvs: r.asvs || [], cwe: r.cwe || [], owasp_api: r.owasp_api || [] };
+  return { class: cls, wstg: r.wstg || [], asvs: r.asvs || [], cwe: r.cwe || [], owasp_api: r.owasp_api || [], owasp_llm: r.owasp_llm || [], owasp_agentic: r.owasp_agentic || [] };
 }
 
 function mapFile(host) {

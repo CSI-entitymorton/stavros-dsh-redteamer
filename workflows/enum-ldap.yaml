@@ -1,0 +1,22 @@
+# Workflow seed — enum-ldap (dialetto workflow, Ondata 2 C1w)
+# RootDSE base first (read-only), poi naming contexts solo se la base ha successo.
+name: enum-ldap
+description: Enumerazione LDAP read-only autorizzata (rootDSE + default naming context)
+vars:
+  ldap_port: "389"
+requires:
+  - ldapsearch
+steps:
+  - id: rootdse
+    cmd: node tools/run.js ldapsearch -x -H ldap://{target}:{ldap_port} -s base -LLL
+    on_error: continue
+    artifacts:
+      - path: reports/enum-{target}-rootdse.ldif
+        surface: scan
+  - id: default-naming-context
+    cmd: node tools/run.js ldapsearch -x -H ldap://{target}:{ldap_port} -b "" -s base -LLL namingContexts
+    when:
+      exit_code: [0, 32, 34]
+    artifacts:
+      - path: reports/enum-{target}-namingcontexts.ldif
+        surface: scan

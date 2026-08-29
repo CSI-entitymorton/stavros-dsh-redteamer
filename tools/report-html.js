@@ -11,6 +11,32 @@ const state = require('./state');
 const { buildChains } = require('./chain');
 const { calculate } = require('./cvss');
 const { lookupCwe, lookupMaxEpss, normCve } = require('./epss');
+const { buildMatrix } = require('./coverage');
+
+// ─── Ondata 2 additions (B3 confidence + B2 coverage section) ────────────────
+// B3 — DETERMINISTIC confidence ∈ [0,1] (no ML, no randomness, fully auditable):
+//   base by mechanical oracle type: oob 0.90 · http-diff 0.85 · console 0.80 · script 0.75;
+//   reality-claim rows WITHOUT a machine oracle object (legacy): base 0.60;
+//   hypothesis-level rows (inconclusive/suspected/triggered/no claim): base 0.35.
+//   +0.05 per ADDITIONAL reproduction beyond the first (f.verify.runs || f.reproductions),
+//    capped at +0.20. +0.05 "independence" bonus when verify.independent is true or at least
+//    two DISTINCT oracle references exist. Label: >=0.75 high · >=0.50 medium · else low.
+const CONF_ORACLE_BASE = { oob: 0.9, 'http-diff': 0.85, console: 0.8, script: 0.75 };
+function confidenceOf(f) {
+  let base;
+  const otype = f && f.oracle && f.oracle.type;
+  if (otype && CONF_ORACLE_BASE[otype] != null) base = CONF_ORACLE_BASE[otype];
+  else if (f && (f.status === 'verified' || f.status === 'confirmed' || f.verify_level === 'exploited' || f.verify_level === 'proven_impact')) base = 0.6;
+  else base = 0.35;
+  const runs = Math.max(1, parseInt((f && ((f.verify && f.verify.runs) || f.reproductions)) || 1, 10) || 1);
+  let score = base + 0.05 * Math.min(runs - 1, 4);
+  const refs = new Set();
+  if (f && f.oracle && f.oracle.ref) refs.add(String(f.oracle.ref));
+  if (f && f.verify && Array.isArray(f.verify.oracle_refs)) f.verify.oracle_refs.forEach((r) => refs.add(String(r)));
+  if (f && f.verify && (f.verify.independent === true || refs.size >= 2)) score += 0.05;
+  score = Math.max(0, Math.min(1, score));
+  return { score: Math.round(score * 100) / 100, label: score >= 0.75 ? 'high' : (score >= 0.5 ? 'medium' : 'low'), runs };
+}
 
 const SEV_ORDER = { Critical: 5, High: 4, Medium: 3, Low: 2, Info: 1 };
 const SEV_CLASS = { Critical: 'crit', High: 'high', Medium: 'med', Low: 'low', Info: 'info' };
@@ -79,7 +105,24 @@ function enrichFinding(f) {
   }
   out.epss = typeof epss === 'number' ? epss : null;
   out.cwe_title = f.cwe ? ((lookupCwe(f.cwe) || {}).title || null) : null;
+  out.confidence = confidenceOf(out);
   return out;
+}
+
+// B2 — aggregate one host's coverage into report-facing numbers. Pure (data in, data out).
+function coverageSummary(m, findingsForHost) {
+  const rows = m.rows || [];
+  const candidatesTotal = rows.reduce((a, r) => a + (r.candidates || 0), 0);
+  const verified = findingsForHost.filter((f) => f.status === 'verified' || f.status === 'confirmed').length;
+  const FP_STATUSES = ['false-positive', 'false_positive', 'falsepositive', 'inconclusive'];
+  const fpDiscarded = findingsForHost.filter((f) => FP_STATUSES.includes(String(f.status || '').toLowerCase())).length;
+  // Untested areas = rows truly missed (never probed) PLUS n-a rows carrying an explicit
+  // skip_reason (documented skips ARE untested-with-known-cause; silent n-a stays out).
+  const untested = [
+    ...rows.filter((r) => r.status === 'missed').map((r) => ({ class: r.class, cause: r.skip_reason || 'no probe recorded for this class' })),
+    ...rows.filter((r) => r.status === 'n-a' && r.skip_reason).map((r) => ({ class: r.class, cause: r.skip_reason })),
+  ];
+  return { host: m.host, candidatesTotal, verified, fpDiscarded, untested, tested: rows.filter((r) => r.status === 'tested').length, confirmedClasses: rows.filter((r) => r.status === 'confirmed').length };
 }
 
 // targets from state.db (mirrors stavros.js report()).
@@ -110,6 +153,8 @@ function findingsRows(findings, sploitByCve) {
       const n = (sploitByCve[c] || []).length;
       return `<code>${htmlEscape(c)}</code>${n ? ` <span class="tag">${n} sploit</span>` : ''}`;
     }).join(' ');
+    const conf = f.confidence || null;
+    const confCell = conf ? `<span class="tag conf-${conf.label}" title="deterministic: oracle/reproductions/independence">${Math.round(conf.score * 100)}% ${htmlEscape(conf.label)}</span>` : '&mdash;';
     return `<tr class="${SEV_CLASS[f.severity] || ''}">
       <td class="sev">${htmlEscape(f.severity)}</td>
       <td class="title">${htmlEscape(f.title)}${f.status === 'verified' ? ' <span class="tag verified">verified</span>' : ''}</td>
@@ -117,10 +162,59 @@ function findingsRows(findings, sploitByCve) {
       <td class="mono">${htmlEscape(f.endpoint || '')}</td>
       <td>${f.cwe ? `<code>${htmlEscape(f.cwe)}</code>${f.cwe_title ? '<br><small>' + htmlEscape(f.cwe_title) + '</small>' : ''}` : '&mdash;'}</td>
       <td class="num">${fmtCvss(f.cvss)}</td>
+      <td>${confCell}</td>
       <td class="num">${fmtEpss(f.epss)}</td>
       <td>${f.cves.length ? cves : '&mdash;'}</td>
     </tr>`;
   }).join('\n');
+}
+
+// F8/C4w (Ondata 4) — «Costi & usage» section, accanto a «Copertura & accuratezza».
+// Aggregati per azione/agente/sessione calcolati da tools/accounting.js sui campi esistenti
+// (ts, bin, duration_ms) + `usage` opzionale fornito via cli/env. Zero rete, zero API pricing.
+function fmtCost(c) {
+  if (c == null) return '&mdash;';
+  return Number.isInteger(c) ? String(c) : c.toFixed(4);
+}
+function accountingSection(acc) {
+  if (!acc || !acc.session || !acc.session.invocations) {
+    return '<p class="muted">Nessun dato di usage: fornisci i token via <code>--tokens in,out</code> / <code>RUN_TOKENS_IN/OUT</code> (vedi tools/accounting.js).</p>';
+  }
+  const s = acc.session;
+  const parts = [];
+  parts.push(`<p class="cov-flow"><strong>${s.invocations}</strong> invocazioni · <strong>${s.tokens}</strong> token (${s.tokens_in} in / ${s.tokens_out} out) · costo ${s.cost != null ? `<strong>${fmtCost(s.cost)}</strong>` : '<em>non noto</em>'}</p>`);
+  const table = (title, rows) => `<h3>${title}</h3><table><thead><tr><th>Chiave</th><th class="num">Inv.</th><th class="num">Token in</th><th class="num">Token out</th><th class="num">Token</th><th class="num">Costo</th></tr></thead><tbody>${rows.map(([k, v]) => `<tr><td>${htmlEscape(k)}</td><td class="num">${v.invocations}</td><td class="num">${v.tokens_in}</td><td class="num">${v.tokens_out}</td><td class="num">${v.tokens}</td><td class="num">${fmtCost(v.cost)}</td></tr>`).join('\n')}</tbody></table>`;
+  const byAction = Object.entries(acc.actions && acc.actions.per_bin ? acc.actions.per_bin : {})
+    .sort((a, b) => b[1].tokens - a[1].tokens);
+  if (byAction.length) parts.push(table('Per azione (bin)', byAction));
+  const byAgent = Object.entries(acc.agents && acc.agents.per_agent ? acc.agents.per_agent : {})
+    .sort((a, b) => b[1].tokens - a[1].tokens);
+  if (byAgent.length) parts.push(table('Per agente', byAgent));
+  parts.push('<p class="muted">Costo = solo se fornito dall\'operatore (env/cli): mai calcolato, mai chiamate a API di pricing. La colonna usage è ADDITIVA sui record nuovi; la hash-chain A3 dei findings non è mai riscritta.</p>');
+  return parts.join('\n');
+}
+
+// B2 — «Copertura & accuratezza» auto-generated section (candidates → verified → discarded
+// FPs → untested areas WITH cause). Data comes from coverage.buildMatrix + findings statuses.
+function coverageSection(coverage) {
+  if (!coverage || !coverage.hosts || !coverage.hosts.length) return '<p class="muted">Nessun dato di copertura disponibile (serve reports/&lt;host&gt;-map.json + findings).</p>';
+  const t = coverage.totals;
+  const parts = [];
+  parts.push(`<p class="cov-flow"><strong>${t.candidatesTotal}</strong> candidati → <strong>${t.verified}</strong> verificati/confermati · <strong>${t.fpDiscarded}</strong> FP/inconclusivi scartati · <strong>${t.untestedTotal}</strong> aree non testate</p>`);
+  for (const h of coverage.hosts) {
+    parts.push(`<section class="target cov-host">
+      <h3>${htmlEscape(h.summary.host)}</h3>
+      <table>
+        <thead><tr><th>Classe</th><th class="num">Candidati</th><th class="num">Findings</th><th>Stato</th><th>Causa (se nota)</th></tr></thead>
+        <tbody>
+          ${h.matrix.rows.map((r) => `<tr><td>${htmlEscape(r.class)}</td><td class="num">${r.candidates || 0}</td><td class="num">${r.findings || 0}</td><td>${htmlEscape(r.status)}${r.skip_reason ? ' <span class="tag">skip_reason</span>' : ''}</td><td class="muted">${htmlEscape(r.skip_reason || '')}</td></tr>`).join('\n')}
+        </tbody>
+      </table>
+      ${h.summary.untested.length ? `<p class="muted">Non testate: ${h.summary.untested.map((u) => `${htmlEscape(u.class)} (${htmlEscape(u.cause)})`).join(' · ')}</p>` : '<p class="muted">Nessuna classe rimasta non testata per questo host.</p>'}
+    </section>`);
+  }
+  parts.push('<p class="muted">Legenda stati: tested = sonda eseguita (esito negativo = risultato valido) · confirmed = finding registrato · n-a = nessuna superficie candidata · missed = NON testato. Gli scarti contano gli status false-positive e inconclusive.</p>');
+  return parts.join('\n');
 }
 
 function chainsSection(chains) {
@@ -196,9 +290,15 @@ function buildHtml(data) {
 
   <h2>Findings (${s.total})</h2>
   ${findings.length ? `<table>
-    <thead><tr><th>Sev</th><th>Finding</th><th>Host</th><th>Endpoint</th><th>CWE</th><th>CVSS</th><th>EPSS</th><th>CVEs</th></tr></thead>
+    <thead><tr><th>Sev</th><th>Finding</th><th>Host</th><th>Endpoint</th><th>CWE</th><th>CVSS</th><th>Confidence</th><th>EPSS</th><th>CVEs</th></tr></thead>
     <tbody>${findingsRows(findings, d.sploitByCve || {})}</tbody>
   </table>` : '<p class="muted">No findings recorded yet.</p>'}
+
+  <h2>Copertura &amp; accuratezza</h2>
+  ${coverageSection(d.coverage)}
+
+  <h2>Costi &amp; usage (F8)</h2>
+  ${accountingSection(d.accounting)}
 
   <h2>Attack chains</h2>
   ${chainsSection(d.chains)}
@@ -221,6 +321,8 @@ function main() {
   const sploitFile = opt('--sploit');
   const outFile = opt('--out') || path.join(__dirname, '..', 'reports', 'report.html');
   const hostFilter = opt('--host');
+  const reportsDir = opt('--reports-dir'); // B2: injectable map-file dir (tests/rollups)
+  const findingsFileUsed = findingsFile || process.env.FINDINGS_JSONL || path.join(__dirname, '..', 'reports', 'findings.jsonl');
 
   // Gate check: report generation requires the report gate to have PASSed in gate-log.md.
   // This is the deterministic enforcement boundary (same as dsh-sec-enforce reportGate).
@@ -259,8 +361,37 @@ function main() {
 
   const chains = buildChains(filtered);
   const sploitByCve = sploitFile ? loadSploit(sploitFile) : {};
+
+  // B2: build the per-host coverage rollup for the hosts present in the (filtered) findings.
+  const hostNames = [...new Set(filtered.map((f) => String(f.host || '').trim()).filter(Boolean))];
+  if (!hostNames.length && hostFilter) hostNames.push(hostFilter);
+  const covHosts = [];
+  for (const h of hostNames) {
+    try {
+      const m = buildMatrix(h, { reportsDir: reportsDir || undefined, findingsFile: findingsFileUsed });
+      const fh = filtered.filter((f) => f.host === h || String(f.host || '').includes(h));
+      covHosts.push({ matrix: m, summary: coverageSummary(m, fh) });
+    } catch { /* a broken map must not kill the report */ }
+  }
+  const coverage = {
+    hosts: covHosts,
+    totals: {
+      candidatesTotal: covHosts.reduce((a, x) => a + x.summary.candidatesTotal, 0),
+      verified: covHosts.reduce((a, x) => a + x.summary.verified, 0),
+      fpDiscarded: covHosts.reduce((a, x) => a + x.summary.fpDiscarded, 0),
+      untestedTotal: covHosts.reduce((a, x) => a + x.summary.untested.length, 0),
+    },
+  };
+
+  // F8/C4w (Ondata 4): aggregati costi/usage dal run-audit (env RUN_AUDIT_FILE nei test).
+  let accounting = null;
+  try {
+    const accMod = require('./accounting');
+    accounting = accMod.aggregateAll(accMod.loadAuditLines());
+  } catch { accounting = null; }
+
   const html = buildHtml({
-    findings: filtered, targets, chains, sploitByCve, generatedAt: new Date().toISOString(),
+    findings: filtered, targets, chains, sploitByCve, coverage, accounting, generatedAt: new Date().toISOString(),
   });
 
   const tmp = outFile + '.' + process.pid;
@@ -271,4 +402,6 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { buildHtml, enrichFinding, loadFindings, loadSploit, collectFromState, htmlEscape, summaryTable };
+module.exports = { buildHtml, enrichFinding, loadFindings, loadSploit, collectFromState, htmlEscape, summaryTable,
+  // ondata-2 additions
+  confidenceOf, coverageSummary, coverageSection, accountingSection };

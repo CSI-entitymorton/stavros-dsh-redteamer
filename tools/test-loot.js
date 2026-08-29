@@ -14,7 +14,7 @@ for (const f of [tmpFind, tmpLoot]) try { fs.unlinkSync(f); } catch {}
 const { record } = require('./record-finding');
 
 const res = record(JSON.stringify({
-  severity: 'High', title: 'Domain admin hash dumped', host: '10.0.0.5',
+  severity: 'High', title: 'Domain admin hash dumped', host: '10.0.0.5', status: 'inconclusive',
   poc: 'hashdump on WIN-DC01', secret: 'Administrator:500:aad3b435:31d6cfe0d16ae931b73c59d7e0c089c0:::',
 }));
 assert.ok(res.ok, JSON.stringify(res));

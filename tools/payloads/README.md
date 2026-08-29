@@ -13,6 +13,9 @@ marker (unique string / arithmetic / time) — never a destructive action.
 | `lfi.md` | Path traversal / LFI / RFI + PHP wrappers |
 | `nosqli.md` | NoSQL injection (MongoDB operators, auth-bypass JSON) |
 | `prototype-pollution.md` | Prototype pollution (server + client side) |
+| `llm-agentic.md` | LLM / GenAI / Agentic AI (OWASP LLM Top 10 2025/26 + Agentic AI 2026) — detection-only |
+| `mcp.md` | MCP server / tool-calling surface (OWASP Agentic AI 2026 ASI02/03/05) — detection-only |
+| `smuggling.md` | HTTP request smuggling / desync (CL.TE / TE.CL / TE.TE) — detection-only; runs via `tools/desync.js` |
 | `upload-bypass/gen-polyglot-jpeg.js` | Valid-JPEG/script polyglot for magic-byte/MIME upload filters (see `upload-bypass/README.md`) |
 
 ## Rules of use

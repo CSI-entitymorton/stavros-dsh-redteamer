@@ -1,0 +1,145 @@
+# Entity taxonomy — memory graph + coverage (F4, spec §3.1 F4, P2)
+# -----------------------------------------------------------------------------
+# Linguaggio TIPIZZATO delle entità del memory graph e della coverage: recon e
+# findings producono entità coerenti (Target/Port/Service/Vuln/Finding/Evidence),
+# mai entità spurie. Questo file è la SINGOLA fonte di verità consumata dal
+# validatore determinista tools/entity-taxonomy.js (stdlib-only, zero rete).
+#
+# Formato istanza (compatibile con il server MCP memory esistente, NDJSON):
+#   {"type":"entity","name":"<id>","entityType":"<Target|Port|Service|Vuln|Finding|Evidence>",
+#    "observations":["..."], "<campo obbligatorio/opzionale>":..., "relations":[{"type":"<rel>","to":"<id>"}]}
+#   - "type":"entity" e "observations" sono i campi nativi del grafo: SEMPRE accettati.
+#   - entityType NON incluso nella tassonomia → entità NON tassonomica (skipped, mai scritta
+#     dai nostri adattatori; il grafo può comunque contenerne di legacy).
+#   - Campi sconosciuti → rifiutati (fail-closed: nessuna entità spuria).
+#   - relations: ogni link deve essere una relazione consentita per quell'entità.
+#
+# Integrazione coverage.js: le superfici coperte derivano da entità tipizzate
+# (Vuln/Finding) via entity-taxonomy.coveredClassesFromEntities(); coverage.js
+# accetta opts.entities come sorgente ADDITIVA di stati classe (vedi header).
+version: 1
+
+entities:
+  Target:
+    description: Host/dominio/CIDR autorizzato in scope — radice del grafo.
+    required:
+      - id
+      - name
+    optional:
+      type: string
+      cidr: string
+      aliases: array
+    relations:
+      - has_service
+      - has_port
+      - references_target
+  Port:
+    description: Porta aperta su un Target.
+    required:
+      - id
+      - target_ref
+      - port
+      - protocol
+    optional:
+      state: string
+    relations:
+      - runs_service
+      - has_service
+  Service:
+    description: Servizio rilevato su una porta.
+    required:
+      - id
+      - port_ref
+      - name
+    optional:
+      version: string
+      banner: string
+    relations:
+      - has_vuln
+  Vuln:
+    description: Classe di vulnerabilità candidata/rilevata su una superficie.
+    required:
+      - id
+      - surface_ref
+      - class
+    optional:
+      cwe: string
+      confidence: number
+    relations:
+      - evidenced_by
+      - materialized_as
+  Finding:
+    description: Finding strutturato (riga findings.jsonl) — livello realtà con oracolo meccanico.
+    required:
+      - id
+      - vuln_ref
+      - severity
+      - status
+      - host
+    optional:
+      title: string
+      cwe: string
+      endpoint: string
+      cvss: number
+      epss: number
+      cves: array
+      oracle: object
+      evidence_quote: object
+      usage: object
+      verify_level: string
+    relations:
+      - has_evidence
+      - references_target
+  Evidence:
+    description: Prova meccanica su disco (artefatto citato da oracle/evidence_quote).
+    required:
+      - id
+      - finding_ref
+      - file
+      - text
+    optional:
+      line: number
+
+relations:
+  has_service:
+    from:
+      - Target
+    to:
+      - Service
+  has_port:
+    from:
+      - Target
+    to:
+      - Port
+  runs_service:
+    from:
+      - Port
+    to:
+      - Service
+  has_vuln:
+    from:
+      - Service
+      - Target
+    to:
+      - Vuln
+  evidenced_by:
+    from:
+      - Vuln
+    to:
+      - Evidence
+  materialized_as:
+    from:
+      - Vuln
+    to:
+      - Finding
+  has_evidence:
+    from:
+      - Finding
+    to:
+      - Evidence
+  references_target:
+    from:
+      - Finding
+      - Target
+    to:
+      - Target
