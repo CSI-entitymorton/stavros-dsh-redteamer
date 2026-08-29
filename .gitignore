@@ -24,5 +24,8 @@ recon/
 tools/.pace.json
 tools/.test-routes.txt
 
+# local agentic working docs (never publish)
+docs/superpowers/
+
 # os
 .DS_Store
