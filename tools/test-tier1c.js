@@ -18,7 +18,7 @@ function ok(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const cl = require(path.join(WS, 'tools', 'coverage-loop'));
 const tm = require(path.join(WS, 'tools', 'target-model'));
 

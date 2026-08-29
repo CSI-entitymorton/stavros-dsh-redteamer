@@ -25,7 +25,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const sg = require(path.join(WS, 'tools', 'ssrf-guard'));
 const la = require(path.join(WS, 'tools', 'listen-audit'));
 

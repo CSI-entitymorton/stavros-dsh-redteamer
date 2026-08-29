@@ -25,7 +25,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const OPSTATE = path.join(WS, 'tools', 'opstate.js');
 const LEDGER = path.join(WS, 'tools', 'artifact-ledger.js');
 const WORKFLOW = path.join(WS, 'tools', 'workflow.js');

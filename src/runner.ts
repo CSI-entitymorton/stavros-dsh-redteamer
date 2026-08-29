@@ -35,7 +35,7 @@ export function workspaceDir(): string {
 }
 
 /** Asset che il plugin idrata nel workspace (merging, mai sovrascrive dati esistenti). */
-const HYDRATE_ITEMS = ['tools', 'knowledge.md', 'refs', 'skills', 'subagents', 'workflows'] as const
+const HYDRATE_ITEMS = ['tools', 'knowledge.md', 'refs', 'skills', 'subagents', 'workflows', 'docs'] as const
 
 function copyMissing(src: string, dst: string): void {
   const st = fs.statSync(src)

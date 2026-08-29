@@ -19,7 +19,7 @@ function ok(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const T = fs.mkdtempSync(path.join(os.tmpdir(), 'tier1a-'));
 process.env.STATE_DB = path.join(T, 'state.db');
 

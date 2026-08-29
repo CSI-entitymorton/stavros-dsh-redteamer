@@ -1,0 +1,42 @@
+# Fleet dichiarativa (E4) — composizione squadre red/blue ripetibile.
+# Fonte di verità consumata da tools/fleet.js (validazione fail-closed).
+#   node tools/fleet.js plan                # dry-run a zero scritture
+#   node tools/fleet.js render --out <dir>  # deterministico, confinato all'outdir
+#   node tools/fleet.js apply --yes --out <dir>
+# artifacts sono TEMPLATE dichiarativi ({target} ecc.), risolti dall'orchestratore.
+version: 1
+name: lab-fleet
+
+teams:
+  - name: red
+    color: red
+    order: 1
+    agents:
+      - id: red-recon
+        role: reconnaissance
+        preset: pentest
+        requires_keys: []
+      - id: red-enum
+        role: service-enumeration
+        preset: pentest
+      - id: red-exploit
+        role: exploitation
+        preset: pentest
+    artifacts:
+      - path: reports/recon-{target}-discovery.txt
+        surface: scan
+      - path: reports/recon-{target}-topports.gnmap
+        surface: scan
+  - name: blue
+    color: blue
+    order: 2
+    agents:
+      - id: blue-defender
+        role: detection
+        preset: stavros
+      - id: blue-responder
+        role: incident-response
+        preset: stavros
+    artifacts:
+      - path: reports/bluewatch-{target}-timeline.jsonl
+        surface: watch

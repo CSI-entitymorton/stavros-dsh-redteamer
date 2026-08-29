@@ -19,7 +19,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const RH = path.join(WS, 'tools', 'report-html.js');
 const PR = path.join(WS, 'tools', 'poc-replay.js');
 
@@ -204,7 +204,8 @@ async function main() {
       cwd: WS,
     });
     assert.strictEqual(r.status, 1);
-    assert.match(r.stderr, /fail-closed/);
+    // hardened scope-guard denies cleanly on unreadable/missing scope (no ENOENT crash)
+    assert.match(r.stderr, /out of scope|fail-closed/);
   });
   await okAsync('avversariale: reproducer mancante -> errore chiaro, zero spawn', async () => {
     const before = fs.readFileSync(eiFile, 'utf8').split('\n').filter(Boolean).length;

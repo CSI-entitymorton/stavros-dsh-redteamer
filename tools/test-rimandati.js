@@ -27,7 +27,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const cli = (file, args, env) => spawnSync(process.execPath, [file, ...args], { encoding: 'utf8', env: { ...process.env, ...env }, timeout: 30000 });
 const waitFor = (fn, ms) => new Promise((resolve, reject) => {
   const t0 = Date.now();

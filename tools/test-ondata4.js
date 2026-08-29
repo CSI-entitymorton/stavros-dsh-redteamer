@@ -26,7 +26,7 @@ function ok(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const TAX = path.join(WS, 'tools', 'entity-taxonomy.js');
 const ACC = path.join(WS, 'tools', 'accounting.js');
 const AUDIT = path.join(WS, 'tools', 'audit-trail.js');
@@ -49,6 +49,14 @@ async function main() {
   const T = fs.mkdtempSync(path.join(os.tmpdir(), 'ondata4-'));
   const SCOPE = path.join(T, 'scope.json');
   fs.writeFileSync(SCOPE, JSON.stringify({ targets: ['target.example'], exclusions: [] }));
+  // gate.js CLI resolves its workspace via GATE_WS (default = package root); point it at a
+  // hermetic fixture so the tests never touch the repo's real (gitignored) reports/scope.
+  const gw = path.join(T, 'gate-ws');
+  fs.mkdirSync(path.join(gw, 'reports'), { recursive: true });
+  fs.writeFileSync(path.join(gw, 'scope.json'), JSON.stringify({ targets: ['target.example'] }));
+  fs.writeFileSync(path.join(gw, 'reports', 'findings.jsonl'), JSON.stringify({
+    severity: 'Low', title: 'fixture', host: 'target.example', poc: 'x', status: 'inconclusive',
+  }) + '\n');
   const REG = path.join(T, 'reg.json');
   fs.writeFileSync(REG, JSON.stringify({
     fakebin: { risk_tier: 'read', rate_class: 'normal', read_only: true },
@@ -425,8 +433,8 @@ reports:
     assert.deepStrictEqual(gateLib.gateChecks('chains', null), legacy);
   });
   ok('CLI gate pass con --workflow: report dichiarato PRESENTE → PASS; MANCANTE → FAIL (exit 1)', () => {
-    const covFile = path.join(WS, 'reports', 'coverage-matrix.md');
-    const env = { GATE_LOG_FILE: path.join(T, 'gate-log.md'), SCOPE_JSON: SCOPE };
+    const covFile = path.join(gw, 'reports', 'coverage-matrix.md');
+    const env = { GATE_LOG_FILE: path.join(T, 'gate-log.md'), SCOPE_JSON: SCOPE, GATE_WS: gw };
     // presente
     if (!fs.existsSync(covFile)) fs.writeFileSync(covFile, '| x |\n');
     let r = cli(GATE, ['pass', 'recon', '--workflow', wfGood], env);
@@ -441,13 +449,13 @@ reports:
   });
   ok('CLI gate SENZA --workflow: comportamento legacy invariato (runGate identico)', () => {
     assert.deepStrictEqual(gateLib.runGate('recon'), gateLib.runGate('recon', {}));
-    const r = cli(GATE, ['pass', 'chains'], { GATE_LOG_FILE: path.join(T, 'gate-log-legacy.md'), SCOPE_JSON: SCOPE });
+    const r = cli(GATE, ['pass', 'chains'], { GATE_LOG_FILE: path.join(T, 'gate-log-legacy.md'), SCOPE_JSON: SCOPE, GATE_WS: gw });
     assert.strictEqual(r.status, 0, r.stderr);
   });
   ok('workflow MALFORMATO con --workflow → fail-closed exit 1 (mai fallback silenzioso)', () => {
     const bad = path.join(T, 'bad-wf.yaml');
     fs.writeFileSync(bad, 'name: x\nsteps: nope\n');
-    const r = cli(GATE, ['pass', 'recon', '--workflow', bad], { GATE_LOG_FILE: path.join(T, 'gl-bad.md') });
+    const r = cli(GATE, ['pass', 'recon', '--workflow', bad], { GATE_LOG_FILE: path.join(T, 'gl-bad.md'), GATE_WS: gw });
     assert.strictEqual(r.status, 1);
     assert.ok(r.stderr.includes('workflow invalid'), r.stderr);
   });

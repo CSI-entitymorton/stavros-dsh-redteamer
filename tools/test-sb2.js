@@ -20,7 +20,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const RUN = path.join(WS, 'tools', 'run.js');
 const TP = path.join(WS, 'tools', 'tool-plane.js');
 

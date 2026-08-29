@@ -28,7 +28,7 @@ async function okAsync(name, fn) {
   catch (e) { fail++; console.log(`  FAIL ${name}: ${e.message}`); }
 }
 
-const WS = '/home/stavros/Desktop/Redteamingtest';
+const WS = path.join(__dirname, '..');
 const RETRIEVAL = path.join(WS, 'tools', 'retrieval-budget.js');
 const ROUTING = path.join(WS, 'tools', 'model-routing.js');
 const RUN = path.join(WS, 'tools', 'run.js');
