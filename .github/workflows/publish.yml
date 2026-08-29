@@ -64,7 +64,9 @@ jobs:
 
   publish:
     needs: pack
-    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish)
+    # npm publish requires the NPM_TOKEN secret; skip cleanly until it is configured
+    # ("GitHub Release only" until then). Once the token exists, the next tag publishes.
+    if: (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.publish)) && secrets.NPM_TOKEN != ''
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
