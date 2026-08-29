@@ -7,7 +7,7 @@
 #
 # Prerequisiti:
 #   - dsh installato in ~/.dsh/cli (baseline dsh-v0.1.1-rc.2)
-#   - profile usa-e-getta pronto:  dsh plugin --profile stavros-dsh-redteamer-test add ./stavros-dsh-redteamer-0.1.0.tgz
+#   - profile usa-e-getta pronto:  dsh plugin --profile stavros-dsh-redteamer-test add ./stavros-dsh-redteamer-0.2.0.tgz
 #   - chiave LLM esportata (es. export ORCAROUTER_API_KEY=... / B_AI_API_KEY=...)
 #
 # Nota: un profile creato con `dsh plugin add` ha solo dsh-base, che non basta a
@@ -29,7 +29,7 @@ if [[ -z "${ORCAROUTER_API_KEY:-}" && -z "${B_AI_API_KEY:-}" && -z "${OPENROUTER
 fi
 if [[ ! -f "$PROFILE_DIR/package.json" ]]; then
   echo "profile stavros-dsh-redteamer-test mancante — crealo prima:"
-  echo "  dsh plugin --profile stavros-dsh-redteamer-test add /path/to/stavros-dsh-redteamer-0.1.0.tgz"
+  echo "  dsh plugin --profile stavros-dsh-redteamer-test add /path/to/stavros-dsh-redteamer-0.2.0.tgz"
   exit 1
 fi
 
