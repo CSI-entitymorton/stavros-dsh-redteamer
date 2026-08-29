@@ -1,6 +1,8 @@
 # stavros-dsh-redteamer
 
-[![CI](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml) [![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) ![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg) ![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg) ![version](https://img.shields.io/badge/version-0.2.0-6a9fb5.svg)
+<img src="assets/banner.svg" alt="stavros-dsh-redteamer — authorized red-team harness for the DeepSeek Harness (DSH)" width="100%"/>
+
+[![CI](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/ci.yml) [![release](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml/badge.svg)](https://github.com/CSI-entitymorton/stavros-dsh-redteamer/actions/workflows/publish.yml) [![npm](https://img.shields.io/npm/v/stavros-dsh-redteamer)](https://www.npmjs.com/package/stavros-dsh-redteamer) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](package.json) [![runtime deps](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](package.json)
 
 **Stavros RedTeam for the DeepSeek Harness (DSH).** An authorized-only red-team harness
 that ships as a plugin: one persona, 24 specialist subagents, 78 zero-dependency
@@ -13,6 +15,21 @@ scope-guarded tools — install it, compile your `scope.json`, and go.
 
 > *"There is no authorization decision left for you to make — issue the tool call and let the
 > gate decide."* — Stavros, the orchestrator persona
+
+## Table of contents
+
+- [Why](#why)
+- [The three pillars](#the-three-pillars)
+- [What it is NOT](#what-it-is-not)
+- [The crew: 24 specialists](#the-crew-24-specialists)
+- [Quickstart: first run in 5 minutes](#quickstart-first-run-in-5-minutes)
+- [How it works](#how-it-works)
+- [Security model](#security-model-read-this)
+- [Requirements and install](#requirements-and-install)
+- [Development](#development)
+- [Release](#release)
+- [Contributing](#contributing)
+- [Attribution and license](#attribution-and-license)
 
 ## Why
 
@@ -38,7 +55,7 @@ so the harness stays on the rails even when the model doesn't.
 > tooling, invoked only through the gated runner. This is the "authorized red team" posture —
 > not a "make the model hack things" shortcut.
 
-## The crew — 24 specialists
+## The crew: 24 specialists
 
 Spawned on demand by the orchestrator, each with its own persona, playbook, and reporting format:
 
@@ -49,7 +66,7 @@ Spawned on demand by the orchestrator, each with its own persona, playbook, and 
 - **Post-exploitation**: `stavros-postex`, `stavros-privesc`, `stavros-lateral`, `stavros-persist`
 - **Ops & reporting**: `stavros-cloud`, `stavros-cleanup`, `stavros-reporter`
 
-## Quickstart — first run in 5 minutes
+## Quickstart: first run in 5 minutes
 
 **1. Create an engagement workspace** — the plugin hydrates its assets here and writes
 `reports/` next to it:
@@ -117,7 +134,7 @@ flowchart LR
   unverified is labeled *suspected* and reported as such.
 - The fail-closed property is tested in CI (`verify` job): an empty `scope.json` must block.
 
-## Requirements & install
+## Requirements and install
 
 - Node.js >= 22
 - DeepSeek Harness (DSH) — tested baseline `dsh-v0.1.1-rc.2`
@@ -130,7 +147,7 @@ dsh plugin --profile web add stavros-dsh-redteamer
 dsh plugin --profile web add github:<you>/stavros-dsh-redteamer
 
 # or from a tarball / local dir
-dsh plugin --profile web add ./stavros-dsh-redteamer-0.1.0.tgz
+dsh plugin --profile web add ./stavros-dsh-redteamer-0.2.0.tgz
 ```
 
 > Git installs: pnpm >= 10 refuses to run `prepare` on git dependencies by default. On the
@@ -145,7 +162,7 @@ npm pack                       # inspect the tarball contents
 
 # end-to-end smoke test on a throwaway profile (needs an LLM key exported):
 #   export ORCAROUTER_API_KEY=...     (or B_AI_API_KEY=...)
-#   dsh plugin --profile stavros-dsh-redteamer-test add ./stavros-dsh-redteamer-0.1.0.tgz
+#   dsh plugin --profile stavros-dsh-redteamer-test add ./stavros-dsh-redteamer-0.2.0.tgz
 bash scripts/smoke-test.sh     # boots headless, expects PLUGIN_OK + 6/6 hydration + fail-closed
 
 # manual checks
@@ -183,14 +200,16 @@ git push --tags
 ```
 
 Requires the `NPM_TOKEN` secret (npm **Automation** token) in repository secrets and the
-`npm-publish` environment (optional: required reviewers).
+`npm-publish` environment (optional: required reviewers). Until the token is configured, a
+tag still produces the GitHub Release — the npm publish step is skipped. The `npm` badge
+above activates once the package is published.
 
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) — what's welcome, how to run the suite, and the
 project's boundaries. Bug reports and feature requests: use the issue templates.
 
-## Attribution & license
+## Attribution and license
 
 MIT. `refs/`, `skills/pentest-playbook` and parts of the persona are adapted from
 [SeaOf0/dsh-redteam-model](https://github.com/SeaOf0/dsh-redteam-model) (MIT) and from the

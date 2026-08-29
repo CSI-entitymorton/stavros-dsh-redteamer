@@ -2,6 +2,7 @@
   "name": "stavros-dsh-redteamer",
   "version": "0.2.0",
   "description": "Stavros RedTeam for DeepSeek Harness (DSH) — authorized red-team persona + scope-guarded pentest tooling (persona, 24 subagents, methodology and 78 zero-dependency guard tools).",
+  "homepage": "https://github.com/CSI-entitymorton/stavros-dsh-redteamer#readme",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
