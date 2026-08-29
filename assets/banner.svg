@@ -20,20 +20,20 @@
 
   <!-- terminal window (left) -->
   <g font-family="'DejaVu Sans Mono','Courier New',monospace">
-    <rect x="40" y="64" width="430" height="232" rx="10" fill="#0a0d13" stroke="#2a3441" stroke-width="1.5"/>
-    <rect x="40" y="64" width="430" height="34" rx="10" fill="#151b26"/>
-    <rect x="40" y="84" width="430" height="14" fill="#151b26"/>
+    <rect x="40" y="64" width="452" height="232" rx="10" fill="#0a0d13" stroke="#2a3441" stroke-width="1.5"/>
+    <rect x="40" y="64" width="452" height="34" rx="10" fill="#151b26"/>
+    <rect x="40" y="84" width="452" height="14" fill="#151b26"/>
     <circle cx="62" cy="81" r="5.5" fill="#ff5f56"/>
     <circle cx="82" cy="81" r="5.5" fill="#ffbd2e"/>
     <circle cx="102" cy="81" r="5.5" fill="#27c93f"/>
     <text x="118" y="86" fill="#5b6577" font-size="13">stavros@harness: ~/engagement</text>
 
-    <text x="58" y="128" fill="#8b949e" font-size="15">$ <tspan fill="#f85149">node</tspan> tools/scope-guard.js check target.com</text>
-    <text x="58" y="156" fill="#3fb950">[ OK ] in scope · tier auto · proceeding</text>
-    <text x="58" y="188" fill="#8b949e" font-size="15">$ <tspan fill="#f85149">dsh</tspan> spawn stavros-sqli — "auth bypass on /api"</text>
-    <text x="58" y="216" fill="#d29922">[ ! ] target behind WAF · throttling to 2 req/s</text>
-    <text x="58" y="248" fill="#8b949e" font-size="15">$ <tspan fill="#f85149">node</tspan> tools/record-finding.js '{...}'</text>
-    <text x="58" y="276" fill="#3fb950">[ OK ] finding #12 verified · cvss 7.5 · synced</text>
+    <text x="58" y="130" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">scope-guard</tspan> check *.target.com</text>
+    <text x="58" y="158" fill="#3fb950" font-size="14">[ OK ] in scope · gate open · engaging</text>
+    <text x="58" y="190" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">swarm</tspan> 24 specialists &#8594; target.com</text>
+    <text x="58" y="218" fill="#f85149" font-size="14">[ HIT ] stavros-sqli &#183; auth bypass on /api</text>
+    <text x="58" y="250" fill="#8b949e" font-size="14">$ <tspan fill="#f85149">record-finding</tspan> --verify --proof</text>
+    <text x="58" y="278" fill="#f85149" font-size="14" font-weight="bold">[ OWNED ] admin session &#183; cvss 9.1 &#183; logged</text>
   </g>
 
   <!-- title block (right) -->
