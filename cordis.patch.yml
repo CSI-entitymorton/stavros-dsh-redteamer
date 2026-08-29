@@ -1,4 +1,4 @@
-# cordis.patch.yml — dsh-stavros bundle patch.
+# cordis.patch.yml — stavros-dsh-redteamer bundle patch.
 #
 # Portato da dsh/modes/stavros/agent.cordis.yml (StavrosRedTeamer, MIT lineage via
 # dsh-redteam-model) con tre differenze deliberate:
@@ -23,8 +23,8 @@
 # Senza questa riga il loader non carica mai l'apply() del pacchetto (pattern bundle:
 # una riga nel patch referenzia il pacchetto per nome).
 - insert:
-    - id: dsh-stavros
-      name: dsh-stavros
+    - id: stavros-dsh-redteamer
+      name: stavros-dsh-redteamer
 
 # ─── override: persona Stavros (config persona della riga system-prompt) ───
 - id: system-prompt

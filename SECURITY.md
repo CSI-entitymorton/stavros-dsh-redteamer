@@ -1,6 +1,6 @@
 # Security & Acceptable Use
 
-dsh-stavros is an **authorized-only** red-team / penetration-testing assistant.
+stavros-dsh-redteamer is an **authorized-only** red-team / penetration-testing assistant.
 
 - Use it **only** against systems you own or for which you hold **explicit written
   authorization** (a signed engagement, an in-scope bug-bounty program, or a lab you control).

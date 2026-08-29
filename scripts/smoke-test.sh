@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# smoke-test.sh — validazione locale di dsh-stavros (fase 4 del piano di rilascio).
+# smoke-test.sh — validazione locale di stavros-dsh-redteamer (fase 4 del piano di rilascio).
 #
-# Boot headless del profile dsh-stavros-test con un task banale, poi verifica che
+# Boot headless del profile stavros-dsh-redteamer-test con un task banale, poi verifica che
 # il plugin abbia: (1) risposto, (2) idratato gli asset nel workspace, (3) seed di
 # scope.json fail-closed.
 #
 # Prerequisiti:
 #   - dsh installato in ~/.dsh/cli (baseline dsh-v0.1.1-rc.2)
-#   - profile usa-e-getta pronto:  dsh plugin --profile dsh-stavros-test add ./dsh-stavros-0.1.0.tgz
+#   - profile usa-e-getta pronto:  dsh plugin --profile stavros-dsh-redteamer-test add ./stavros-dsh-redteamer-0.1.0.tgz
 #   - chiave LLM esportata (es. export ORCAROUTER_API_KEY=... / B_AI_API_KEY=...)
 #
 # Nota: un profile creato con `dsh plugin add` ha solo dsh-base, che non basta a
@@ -16,8 +16,8 @@
 #
 # Uso:  bash scripts/smoke-test.sh [/path/workspace]
 set -u
-WS="${1:-/tmp/dsh-stavros-smoke}"
-PROFILE_DIR="$HOME/.dsh/profiles/dsh-stavros-test"
+WS="${1:-/tmp/stavros-dsh-redteamer-smoke}"
+PROFILE_DIR="$HOME/.dsh/profiles/stavros-dsh-redteamer-test"
 DSH_BIN="$HOME/.dsh/cli/node_modules/@deepseek-ai/dsh/lib/bin.js"
 
 if ! command -v node >/dev/null 2>&1; then echo "node mancante"; exit 1; fi
@@ -28,8 +28,8 @@ if [[ -z "${ORCAROUTER_API_KEY:-}" && -z "${B_AI_API_KEY:-}" && -z "${OPENROUTER
   echo "⚠️  nessuna chiave LLM esportata — il boot fallirà. export ORCAROUTER_API_KEY=..."
 fi
 if [[ ! -f "$PROFILE_DIR/package.json" ]]; then
-  echo "profile dsh-stavros-test mancante — crealo prima:"
-  echo "  dsh plugin --profile dsh-stavros-test add /path/to/dsh-stavros-0.1.0.tgz"
+  echo "profile stavros-dsh-redteamer-test mancante — crealo prima:"
+  echo "  dsh plugin --profile stavros-dsh-redteamer-test add /path/to/stavros-dsh-redteamer-0.1.0.tgz"
   exit 1
 fi
 
@@ -47,7 +47,7 @@ EOF
 
 rm -rf "$WS"; mkdir -p "$WS"; cd "$WS" || exit 1
 echo "=== boot headless (workspace: $WS) ==="
-node "$DSH_BIN" --profile dsh-stavros-test headless "Reply with exactly: PLUGIN_OK" </dev/null 2>&1 | tail -25
+node "$DSH_BIN" --profile stavros-dsh-redteamer-test headless "Reply with exactly: PLUGIN_OK" </dev/null 2>&1 | tail -25
 echo "=== verifica hydrate ==="
 ok=0
 [[ -d "$WS/tools" ]]        && { echo "tools/ idratati ✓"; ok=$((ok+1)); } || echo "tools/ MANCANTI ✗"

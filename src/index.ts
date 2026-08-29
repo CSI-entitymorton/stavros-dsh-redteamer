@@ -1,4 +1,4 @@
-// index.ts — dsh-stavros bundle plugin.
+// index.ts — stavros-dsh-redteamer bundle plugin.
 //
 // On apply:
 //   1. hydrate() copies the packaged assets (tools/, knowledge.md, refs/, skills/,
@@ -11,14 +11,14 @@ import type { Context } from '@deepseek-ai/cordis'
 import { hydrate, packageVersion, workspaceDir } from './runner.js'
 import { registerTools } from './tools.js'
 
-export const name = 'dsh-stavros'
+export const name = 'stavros-dsh-redteamer'
 
 /** dipende dai servizi tools (registrazione tool) */
 export const inject = ['tools']
 
 export function apply(ctx: Context): void {
   const ws = hydrate()
-  console.log(`[dsh-stavros] v${packageVersion()} hydrated assets into ${ws}`)
+  console.log(`[stavros-dsh-redteamer] v${packageVersion()} hydrated assets into ${ws}`)
   registerTools(ctx)
   void ctx
 }
