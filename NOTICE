@@ -8,5 +8,9 @@ derive from the MIT-licensed project:
 
 Those portions remain under the MIT License. See LICENSE.
 
+The enforcement core bundled in tools/ (scope-guard, ssrf-guard, audit-trail, oracle,
+opstate, tool-plane, run, enforce, budget, ...) is also published standalone as the
+scopelock project (Apache-2.0): https://github.com/CSI-entitymorton/scopelock
+
 This project is an independent, unofficial plugin for the DeepSeek Harness (DSH).
 It is not affiliated with, endorsed by, or published by DeepSeek.

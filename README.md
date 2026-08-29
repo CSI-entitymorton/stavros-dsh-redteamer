@@ -214,4 +214,12 @@ project's boundaries. Bug reports and feature requests: use the issue templates.
 MIT. `refs/`, `skills/pentest-playbook` and parts of the persona are adapted from
 [SeaOf0/dsh-redteam-model](https://github.com/SeaOf0/dsh-redteam-model) (MIT) and from the
 StavrosRedTeamer project. The `tools/` suite is the runtime-agnostic engine shared with
-StavrosRedTeamer (MIT). See `LICENSE`, `NOTICE` and `CHANGELOG.md`.
+StavrosRedTeamer (MIT).
+
+The enforcement core bundled in `tools/` — `scope-guard`, `ssrf-guard`, `audit-trail`,
+`oracle`, `opstate`, `tool-plane`, `run`, `enforce`, `budget` and friends — is the same
+hardened engine published standalone as [scopelock](https://github.com/CSI-entitymorton/scopelock)
+(Apache-2.0): deterministic containment + tamper-evident proof for autonomous agents,
+fail-closed by default. This harness runs on that layer.
+
+See `LICENSE`, `NOTICE` and `CHANGELOG.md`.
