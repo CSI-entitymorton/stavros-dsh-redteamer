@@ -324,9 +324,11 @@ async function main() {
   });
   await okAsync('CLI: required mancante -> exit≠0 elencando; opzionali -> exit 0', async () => {
     const planeCfg = path.join(T, 'plane.json');
+    // NB: la categoria 'lab' NON esiste nella mappa built-in (recon/scan/web/...): cosí il test
+    // resta hermetico anche su runner puliti dove nmap e soci non sono installati (CI).
     fs.writeFileSync(planeCfg, JSON.stringify({
       recon: { 'zz-missing-required-x': { required: true }, 'zz-missing-optional-x': { required: false } },
-      scan: { bash: { required: false } },
+      lab: { bash: { required: false }, 'zz-missing-optional-y': { required: false } },
     }));
     const outF = path.join(T, 'tp-out.json');
     const env = Object.assign({}, process.env, { TOOL_PLANE_CONFIG: planeCfg, TOOL_PLANE_OUT: outF });
@@ -335,7 +337,7 @@ async function main() {
     const jb = JSON.parse(bad.stdout);
     assert.strictEqual(jb.ok, false);
     assert.ok(jb.missing.some((m) => m.bin === 'zz-missing-required-x'));
-    const good = spawnSync('node', [TP, '--json', '--require', 'scan'], { env, encoding: 'utf8' });
+    const good = spawnSync('node', [TP, '--json', '--require', 'lab'], { env, encoding: 'utf8' });
     assert.strictEqual(good.status, 0, good.stdout);
     const jg = JSON.parse(good.stdout);
     assert.strictEqual(jg.ok, true);
