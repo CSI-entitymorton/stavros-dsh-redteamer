@@ -10,6 +10,7 @@ Spawned children read ONLY their own `<id>.md`.
 - `stavros-breach` — Exploit a candidate network service in scope (via msf.js) to get the initial session. → read `subagents/stavros-breach.md`
 - `stavros-cleanup` — Remove every tracked artifact/session; verify the teardown ledger is empty. → read `subagents/stavros-cleanup.md`
 - `stavros-cloud` — Cloud surface: metadata via SSRF, exposed S3/GCS/Azure buckets, provider fingerprint. → read `subagents/stavros-cloud.md`
+- `stavros-hardware` — Authorized physical-access ops (rogue-device audit, drop-box deploy/retrieve). Confirm-tier; teardown-ledger tracked. → read `subagents/stavros-hardware.md`
 - `stavros-csrf` — Find CSRF on state-changing endpoints: missing/stale tokens + SameSite=None/absent cookies. → read `subagents/stavros-csrf.md`
 - `stavros-injection` — Test command/template/header injection, open redirect, SSTI/deser/NoSQLi/LFI/proto-pollution. → read `subagents/stavros-injection.md`
 - `stavros-lateral` — Move laterally between in-scope hosts. Confirm-tier: every move needs explicit user sign-off. → read `subagents/stavros-lateral.md`
@@ -18,6 +19,7 @@ Spawned children read ONLY their own `<id>.md`.
 - `stavros-osint` — Passive OSINT on a domain/organization: emails, hosts, ASNs, exposed services, metadata. → read `subagents/stavros-osint.md`
 - `stavros-persist` — Install minimal persistence / exfiltrate, only on explicit per-action confirmation. → read `subagents/stavros-persist.md`
 - `stavros-postex` — On a controlled session, run local enumeration, privesc recon, and read-only looting. Auto-tier only. → read `subagents/stavros-postex.md`
+- `stavros-privesc` — Turn a low-priv session into root/SYSTEM: catalog checks (auto), then ONE operator-approved escalation (confirm). → read `subagents/stavros-privesc.md`
 - `stavros-recon` — Map the attack surface of a host: subdomains, live hosts, tech stack, historical URLs. → read `subagents/stavros-recon.md`
 - `stavros-reporter` — Consolidate findings, state, and chains into a single severity-ordered report. → read `subagents/stavros-reporter.md`
 - `stavros-sqli` — Test candidate parameters for SQL injection (error/boolean/time-blind) and prove it safely. → read `subagents/stavros-sqli.md`

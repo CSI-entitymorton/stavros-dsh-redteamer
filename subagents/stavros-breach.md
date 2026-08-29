@@ -22,8 +22,12 @@ refuses out-of-scope. Destructive or high-impact actions need the user's explici
 Given {host, service/port, candidate CVE/module} in scope:
 - Pick the matching module; set RHOSTS=<host> (RPORT if needed) and LHOST from the listener profile in
   c2.json. Run: node tools/msf.js runModule "<module>" '{"RHOSTS":"<host>","RPORT":<p>,"LHOST":"<lhost>",...}'.
-- On a session: report the session id, and suggest handing off to Sliver (post-ex).
-- On failure: note why (patched, wrong module) and stop — do not brute modules blindly.
+- SSH path (Linux hosts, when loot/auth.json already holds a key or credential for the box):
+  node tools/sshx.js exec <host> "id" --user <u> --key <keyfile>   (registers session ssh-<user>@<host>)
+  The tool scope-checks the host and tier-gates every command; a successful exec IS the breach.
+- On a session: report the session id, and suggest handing off to Sliver (post-ex) or running
+  privesc checks (node tools/privesc.js checks <session> --channel ssh).
+- On failure: note why (patched, wrong module, auth rejected) and stop — do not brute modules blindly.
 - Record any confirmed exploit/finding via record-finding.js with severity/technique (e.g. T1190)/poc
   and remediation (patch/vendor). Never run an exploit that is destructive or against a non-scoped host.
 
