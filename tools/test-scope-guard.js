@@ -47,3 +47,87 @@ const localScope = { allowed_hosts: [], allowed_url_prefixes: [], allowed_ips: [
 assert.strictEqual(inScope('http://localhost:3000/x', localScope).ok, true);
 
 console.log('scope-guard: all tests passed');
+
+// ============================================================================
+// Ondata 1 (SA2) — estensioni IN CODA (righe originali sopra NON modificate):
+// dual schema {targets,exclusions} + exclusions hard-deny + time_window.
+// Tutto offline/deterministico (scope file in temp, orologio iniettato).
+// ============================================================================
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { loadScope, cidrInScope } = require('./scope-guard');
+
+// --- dual schema: normalization targets -> allowed_hosts/allowed_ips + exclusions ---
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sg-dual-'));
+  const p = path.join(dir, 'scope.json');
+  fs.writeFileSync(p, JSON.stringify({
+    project: 'dual-schema-test',
+    targets: ['192.168.0.0/24', 'lab.example.local'],
+    exclusions: ['192.168.0.1'],
+  }));
+  const s = loadScope(p);
+  assert.deepStrictEqual(s.allowed_ips, ['192.168.0.0/24'], 'targets cidr -> allowed_ips');
+  assert.deepStrictEqual(s.allowed_hosts, ['lab.example.local'], 'targets hostname -> allowed_hosts');
+  assert.strictEqual(s.exclusions.length, 1, 'exclusions normalized');
+  assert.ok(s.raw && Array.isArray(s.raw.targets), 'raw kept');
+  assert.strictEqual(inScope('http://192.168.0.5/', s).ok, true);
+  const exRes = inScope('http://192.168.0.1/', s);
+  assert.strictEqual(exRes.ok, false, 'exclusion hard-deny on ip target');
+  assert.ok(/excluded/.test(exRes.reason), 'reason mentions exclusion');
+  assert.strictEqual(inScope('http://10.0.0.5/', s).ok, false, 'outside targets denied');
+  // CIDR richiesta che INTERSECA un'exclusion -> negata (scelta conservativa)
+  assert.strictEqual(cidrInScope('192.168.0.0/30', s).ok, false, 'intersecting CIDR denied');
+  assert.strictEqual(cidrInScope('192.168.0.8/29', s).ok, true, 'disjoint CIDR allowed');
+
+  // harness schema storico: passthrough + exclusions additive anche qui
+  const p2 = path.join(dir, 'scope-harness.json');
+  fs.writeFileSync(p2, JSON.stringify({
+    allowed_hosts: ['h.example'], allowed_url_prefixes: [], allowed_ips: ['10.0.0.0/8'],
+    exclusions: ['10.9.9.9'],
+  }));
+  const s2 = loadScope(p2);
+  assert.strictEqual(inScope('http://10.8.8.8/', s2).ok, true);
+  assert.strictEqual(inScope('http://10.9.9.9/', s2).ok, false, 'exclusion works on harness schema too');
+  assert.strictEqual(inScope('https://sub.h.example/x', s2).ok, true);
+}
+
+// --- time_window: valutata a ogni call; orologio iniettabile (opts.now / env SCOPE_NOW) ---
+{
+  const past = '2026-01-01T00:00:00Z';
+  const inside = '2026-06-15T12:00:00Z';
+  const future = '2027-01-01T00:00:00Z';
+  const tw = (extra) => Object.assign({ allowed_hosts: ['example.com'] }, extra);
+
+  assert.strictEqual(inScope('https://example.com/', tw({ time_window: { start: past, end: future } }), { now: inside }).ok, true);
+  const before = inScope('https://example.com/', tw({ time_window: { start: past, end: future } }), { now: '2025-06-01T00:00:00Z' });
+  assert.strictEqual(before.ok, false, 'before start denied');
+  assert.strictEqual(before.reason, 'outside engagement time_window', 'exact reason');
+  const after = inScope('https://example.com/', tw({ time_window: { start: past, end: future } }), { now: '2027-06-01T00:00:00Z' });
+  assert.strictEqual(after.ok, false, 'after end denied');
+  assert.strictEqual(after.reason, 'outside engagement time_window');
+  // finestra aperta / assente / null = sempre autorizzabile (retrocompatibile)
+  assert.strictEqual(inScope('https://example.com/', tw(), { now: '2030-01-01T00:00:00Z' }).ok, true);
+  assert.strictEqual(inScope('https://example.com/', tw({ time_window: { start: null, end: null } }), { now: '2030-01-01T00:00:00Z' }).ok, true);
+  // bound malformato -> deny conservativo
+  assert.strictEqual(inScope('https://example.com/', tw({ time_window: { start: 'not-a-date', end: null } }), { now: inside }).ok, false);
+  // clock iniettabile via env SCOPE_NOW (per i caller CLI che non passano opts)
+  process.env.SCOPE_NOW = '2025-06-01T00:00:00Z';
+  try {
+    assert.strictEqual(inScope('https://example.com/', tw({ time_window: { start: past, end: future } })).ok, false, 'SCOPE_NOW honored');
+    process.env.SCOPE_NOW = inside;
+    assert.strictEqual(inScope('https://example.com/', tw({ time_window: { start: past, end: future } })).ok, true, 'SCOPE_NOW inside window');
+  } finally {
+    delete process.env.SCOPE_NOW;
+  }
+  // cidrInScope eredita la time_window
+  const cScope = tw({ allowed_ips: ['10.0.0.0/8'], time_window: { start: past, end: future } });
+  assert.strictEqual(cidrInScope('10.0.0.0/24', cScope, { now: inside }).ok, true);
+  assert.strictEqual(cidrInScope('10.0.0.0/24', cScope, { now: '2030-01-01T00:00:00Z' }).ok, false);
+}
+
+// missing scope file => fail-closed (empty scope, nothing authorized)
+assert.strictEqual(inScope('https://example.com', loadScope('/nonexistent/__no_scope__.json')).ok, false);
+
+console.log('scope-guard: extensions passed (dual schema/exclusions/time_window)');

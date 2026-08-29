@@ -8,6 +8,12 @@ const mem = require('./memory');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-test-'));
 process.env.STAVROS_MEMORY_DIR = dir; // CLI parity if spawned later
+// Sanitizer fixture: the sanitizer fingerprints engagement hosts/IPs from <ws>/scope.json
+// (SCOPE_JSON override — hermetic, never reads a real engagement file). The 'in-scope host'
+// case below must be denied because example.com is in this fixture.
+const scopeFile = path.join(dir, 'scope.json');
+fs.writeFileSync(scopeFile, JSON.stringify({ allowed_hosts: ['example.com'], allowed_ips: [] }));
+process.env.SCOPE_JSON = scopeFile;
 
 // --- add: validation + id assignment ---
 const a = mem.addLesson(dir, {

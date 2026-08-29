@@ -56,7 +56,7 @@ assert.ok(a.supabase_projects.includes('https://examplesupabaseref00.supabase.co
 assert.ok(a.secrets.some((s) => s.type === 'generic_assignment'), 'must catch hardcoded apiKey');
 
 // --- record-finding validation ---
-assert.strictEqual(validate({ severity: 'High', title: 't', host: 'h', poc: 'p' }), null);
+assert.strictEqual(validate({ severity: 'High', title: 't', host: 'h', poc: 'p', status: 'inconclusive' }), null);
 assert.ok(validate({ severity: 'Nope', title: 't', host: 'h', poc: 'p' })); // bad severity
 assert.ok(validate({ severity: 'High', title: 't', host: 'h' })); // missing poc
 assert.strictEqual(key({ host: 'H', endpoint: '/x', title: 'T' }), 'h|/x|t');
@@ -199,7 +199,7 @@ assert.deepStrictEqual([...hostsFromText('https://a.example.com/x\nother.com\n')
 
 // --- record-finding extended schema ---
 const { validate: validateFinding } = require('./record-finding');
-assert.strictEqual(validateFinding({ severity: 'High', title: 't', host: 'h', poc: 'p', cvss: 8.1, cvss_vector: 'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', cwe: 'CWE-200', remediation: 'fix it' }), null);
+assert.strictEqual(validateFinding({ severity: 'High', title: 't', host: 'h', poc: 'p', status: 'inconclusive', cvss: 8.1, cvss_vector: 'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', cwe: 'CWE-200', remediation: 'fix it' }), null);
 assert.ok(validateFinding({ severity: 'High', title: 't', host: 'h', poc: 'p', cvss: 11 })); // > 10
 assert.ok(validateFinding({ severity: 'High', title: 't', host: 'h', poc: 'p', cvss: 'high' })); // not a number
 assert.ok(validateFinding({ severity: 'High', title: 't', host: 'h', poc: 'p', cvss_vector: 'AV:N/AC:L' })); // bad vector

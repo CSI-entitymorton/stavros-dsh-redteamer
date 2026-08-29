@@ -233,7 +233,7 @@ function runNode(args, env) {
   // repeater.js rides the chain too (state file written by the chained serve).
   const repeater = await runNode(
     [path.join(ROOT, 'tools', 'repeater.js'), '--url', `http://127.0.0.1:${originPort}/hdr`, '--show-body'],
-    { SCOPE_JSON: scopePath }
+    { SCOPE_JSON: scopePath, ALLOW_METADATA_TARGET: '1' }
   );
   assert.strictEqual(repeater.code, 0, 'repeater through chain exit 0: ' + repeater.err);
   assert.ok(repeater.out.includes('"status": 200'), 'repeater got 200 through the chain: ' + repeater.out.slice(0, 200));

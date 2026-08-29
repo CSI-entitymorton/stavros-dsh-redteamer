@@ -1,0 +1,25 @@
+# Workflow seed — recon-baseline (dialetto workflow, Ondata 2 C1w)
+# Ogni cmd passa SEMPRE da tools/run.js: scope-guard + enforce + audit ereditati.
+# Uso:
+#   node tools/workflow.js run workflows/recon-baseline.yaml -t 192.168.0.94 --dry-run
+#   node tools/workflow.js run workflows/recon-baseline.yaml -t 192.168.0.94
+name: recon-baseline
+description: Baseline di ricognizione su un target autorizzato (host discovery + top ports)
+vars:
+  ports: "1-1000"
+requires:
+  - nmap
+steps:
+  - id: host-discovery
+    cmd: node tools/run.js nmap -sn {target}
+    on_error: continue
+    artifacts:
+      - path: reports/recon-{target}-discovery.txt
+        surface: scan
+  - id: top-ports
+    cmd: node tools/run.js nmap -Pn --top-ports {ports} {target}
+    when:
+      exit_code: [0, 1]   # nmap esce 1 se l'host non risponde al ping sweep: prosegue comunque
+    artifacts:
+      - path: reports/recon-{target}-topports.gnmap
+        surface: scan

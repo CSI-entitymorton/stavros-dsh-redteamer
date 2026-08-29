@@ -1,0 +1,21 @@
+{
+  "_comment": "SC3/F6 — Mappa DICHIARATIVA di routing modelli per ruolo. Schema: 'roles' = ruoli logici (planner/adviser/verifier/executor/reporter) -> modello; 'phases' = fase dell'harness -> ruolo; 'modes' = override opzionali { '<mode>': { '<fase>': '<ruolo>' } } applicati solo alla mode-dir omonima. ATTENZIONE: TUTTI i nomi dei modelli sono ESEMPI da-adattare all'abbonamento/provider dell'operatore (es. deepseek-reasoner/deepseek-chat oggi, altri domani): il file dichiara POLITICA, non verita'. Consumato da tools/model-routing.js (plan=lettura pura, render/apply=scrittura sidecar model-route.json); la validazione e' fail-closed e rifiuta fasi/ruoli che non esistono.",
+  "version": 1,
+  "roles": {
+    "planner":  { "model": "deepseek-reasoner", "note": "esempio-da-adattare: pianificazione/advising su modello forte" },
+    "adviser":  { "model": "deepseek-reasoner", "note": "esempio-da-adattare: recovery/consulenza su modello forte" },
+    "verifier": { "model": "deepseek-reasoner", "note": "esempio-da-adattare: verifica non regredisce a modello debole" },
+    "executor": { "model": "deepseek-chat",     "note": "esempio-da-adattare: esecuzione su modello economico" },
+    "reporter": { "model": "deepseek-chat",     "note": "esempio-da-adattare: stesura report su modello economico" }
+  },
+  "phases": {
+    "planning":     "planner",
+    "recon":        "executor",
+    "enumeration":  "executor",
+    "exploitation": "executor",
+    "verification": "verifier",
+    "reporting":    "reporter",
+    "recovery":     "adviser"
+  },
+  "modes": {}
+}

@@ -75,7 +75,7 @@ function runRepeater(args, extraEnv) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(ROOT, 'tools', 'repeater.js'), ...args], {
       cwd: ROOT,
-      env: Object.assign({}, process.env, { SCOPE_JSON: scopePath }, extraEnv || {}),
+      env: Object.assign({}, process.env, { SCOPE_JSON: scopePath, ALLOW_METADATA_TARGET: '1' }, extraEnv || {}),
     });
     let out = '', err = '';
     child.stdout.on('data', (d) => (out += d));
@@ -95,7 +95,7 @@ function runRepeaterSyncExpectFail(args) {
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [path.join(ROOT, 'tools', 'repeater.js'), ...args], {
       cwd: ROOT,
-      env: Object.assign({}, process.env, { SCOPE_JSON: scopePath }),
+      env: Object.assign({}, process.env, { SCOPE_JSON: scopePath, ALLOW_METADATA_TARGET: '1' }),
     });
     let out = '', err = '';
     child.stdout.on('data', (d) => (out += d));

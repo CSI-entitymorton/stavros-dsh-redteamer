@@ -20,5 +20,9 @@ memory/
 noauth_results/
 recon/
 
+# per-run runtime state written by the tools themselves (never commit)
+tools/.pace.json
+tools/.test-routes.txt
+
 # os
 .DS_Store

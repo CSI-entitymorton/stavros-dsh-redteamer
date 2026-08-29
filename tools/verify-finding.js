@@ -4,6 +4,14 @@
 // (agent asserts) < verified (oracle re-fired N/N). Only findings carrying a `verify` block
 // auto-verify (no prose parsing).
 //
+// Ondata1 A1/A2 bridge: when record-finding.recordWithVerify() drives this verifier, BOTH
+// outcomes are receipted to disk as a mechanical oracle (artifacts/oracle/<token>.json,
+// type 'http-diff', anchor = "outcome passed|failed: <reason>") and attached to the finding as
+// f.oracle + f.evidence_quote — so reality-level rows always carry disk-backed machine evidence.
+// verifyFile() batch mode is left untouched on purpose: in-place edits of chained lines break
+// the A3 hash-chain by construction and record() will refuse appends until reconciled (visible,
+// not silent).
+//
 // verify block (optional, in the finding JSON):
 //   "verify": { "method":"GET", "url":"https://HOST/api/x", "as":"user_a", "data":null,
 //               "expect": { "status":200, "body_contains":"marker",
